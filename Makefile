@@ -6,7 +6,7 @@
 #    By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/10/07 11:07:29 by bbrassar          #+#    #+#              #
-#    Updated: 2023/10/07 11:15:27 by bbrassar         ###   ########.fr        #
+#    Updated: 2023/10/07 12:28:28 by bbrassar         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -29,6 +29,8 @@ DIR_SRC := src
 DIR_OBJ := obj
 
 SRC := main.cpp
+SRC += cpu.cpp
+SRC += mmu.cpp
 OBJ := $(SRC:%=$(DIR_OBJ)/%.o)
 DEP := $(OBJ:.o=.d)
 

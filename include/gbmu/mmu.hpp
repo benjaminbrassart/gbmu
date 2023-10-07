@@ -1,30 +1,32 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.cpp                                           :+:      :+:    :+:   */
+/*   mmu.hpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/10/07 11:14:40 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/07 16:21:40 by bbrassar         ###   ########.fr       */
+/*   Created: 2023/10/07 11:42:22 by bbrassar          #+#    #+#             */
+/*   Updated: 2023/10/07 11:47:40 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "gbmu/cpu.hpp"
-#include "gbmu/emulator.hpp"
-#include "gbmu/mmu.hpp"
+#pragma once
 
-#include <cstdlib>
+#include <cstdint>
 
-int main([[maybe_unused]] int argc, [[maybe_unused]] char const *argv[])
+namespace gbmu
 {
-    gbmu::cpu cpu;
-    gbmu::mmu mmu;
-
-    while (true)
+    class mmu
     {
-        cpu.step(mmu);
-    }
+    private:
+        std::uint8_t *_ram;
 
-    return EXIT_SUCCESS;
+    public:
+        mmu();
+        ~mmu();
+
+    public:
+        std::uint8_t &operator[](std::uint16_t address);
+        std::uint8_t operator[](std::uint16_t address) const;
+    };
 }
