@@ -6,13 +6,14 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/07 11:27:35 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/07 16:44:20 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/07 19:21:13 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "gbmu/cpu.hpp"
 #include "gbmu/mmu.hpp"
 
+#include <iomanip>
 #include <iostream>
 #include <stdexcept>
 
@@ -50,8 +51,6 @@ namespace gbmu
     void cpu::step(mmu &mmu)
     {
         std::uint8_t code = this->_read_byte(mmu);
-
-        std::cout << static_cast<int>(code) << std::endl;
 
         this->_handle_instruction(mmu, code);
     }
@@ -207,7 +206,13 @@ namespace gbmu
         } break;
 
         case 0x08: {
-            // TODO LD [a16] SP
+            auto address = this->_read_word(mmu);
+            hi_lo value(this->sp);
+
+            mmu[address] = value.lo;
+            mmu[address + 1] = value.hi;
+
+            // TODO check if working
         } break;
 
         case 0x18: {
@@ -857,11 +862,15 @@ namespace gbmu
         } break;
 
         case 0xE0: {
-            // TODO
+            auto a8 = this->_read_byte(mmu);
+
+            this->LD(mmu, mmu[0xFF00 + a8], this->a);
         } break;
 
         case 0xF0: {
-            // TODO
+            auto a8 = this->_read_byte(mmu);
+
+            this->LD(mmu, this->a, mmu[0xFF00 + a8]);
         } break;
 
         case 0xC1: {
@@ -889,11 +898,11 @@ namespace gbmu
         } break;
 
         case 0xE2: {
-            // TODO
+            this->LD(mmu, mmu[0xFF00 + this->c], this->a);
         } break;
 
         case 0xF2: {
-            // TODO
+            this->LD(mmu, this->a, mmu[0xFF00 + this->c]);
         } break;
 
         case 0xC3: {
@@ -989,7 +998,14 @@ namespace gbmu
         } break;
 
         case 0xF8: {
-            // TODO LD HL, SP + e8
+            auto e8 = this->_read_byte(mmu);
+
+            this->LD(mmu, this->hl, static_cast<std::uint16_t>(this->sp + e8));
+
+            this->flags.z = false;
+            this->flags.n = false;
+            // this->flags.h = false; // TODO
+            // this->flags.c = false; // TODO
         } break;
 
         case 0xC9: {
@@ -1017,11 +1033,15 @@ namespace gbmu
         } break;
 
         case 0xEA: {
-            // TODO LD [a16] A
+            auto a16 = this->_read_word(mmu);
+
+            this->LD(mmu, mmu[a16], this->a);
         } break;
 
         case 0xFA: {
-            // TODO LD A [a16]
+            auto a16 = this->_read_word(mmu);
+
+            this->LD(mmu, this->a, mmu[a16]);
         } break;
 
         case 0xCB: {
@@ -1102,6 +1122,9 @@ namespace gbmu
 
         case 0xFF: {
             this->RST(mmu, 0x38);
+        } break;
+        default: {
+            std::cout << "Unhandled instruction: 0x" << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(code) << std::endl;
         } break;
         }
     }
@@ -2193,7 +2216,7 @@ namespace gbmu
         auto n8 = this->_read_byte(mmu);
 
         if (n8 != 0) {
-            throw; // TODO
+            // throw; // TODO
         }
     }
 
@@ -2306,8 +2329,6 @@ namespace gbmu
     void cpu::DEC([[maybe_unused]] mmu& mmu, std::uint16_t &reg)
     {
         reg -= 1;
-
-        // TODO adjust flags
     }
 
     void cpu::RRCA([[maybe_unused]] mmu &mmu)
@@ -2361,56 +2382,80 @@ namespace gbmu
     {
         reg_out += reg_in;
 
-        // TODO compute flags
+        this->flags.z = (reg_out == 0);
+        this->flags.n = false;
+        // this->flags.h = false; // TODO
+        // this->flags.c = false; // TODO
     }
 
     void cpu::SUB([[maybe_unused]] mmu &mmu, std::uint8_t& reg_out, std::uint8_t reg_in)
     {
         reg_out -= reg_in;
 
-        // TODO compute flags
+        this->flags.z = (reg_out == 0);
+        this->flags.n = true;
+        // this->flags.h = false; // TODO
+        // this->flags.c = false; // TODO
     }
 
     void cpu::AND([[maybe_unused]] mmu &mmu, std::uint8_t& reg_out, std::uint8_t reg_in)
     {
         reg_out &= reg_in;
 
-        // TODO compute flags
+        this->flags.z = (reg_out == 0);
+        this->flags.n = false;
+        this->flags.h = true;
+        this->flags.c = false;
     }
 
     void cpu::OR([[maybe_unused]] mmu &mmu, std::uint8_t& reg_out, std::uint8_t reg_in)
     {
         reg_out |= reg_in;
 
-        // TODO compute flags
+        this->flags.z = (reg_out == 0);
+        this->flags.n = false;
+        this->flags.h = false;
+        this->flags.c = false;
     }
 
     void cpu::ADC([[maybe_unused]] mmu &mmu, std::uint8_t& reg_out, std::uint8_t reg_in)
     {
         reg_out += reg_in; // TODO
 
-        // TODO compute flags
+        this->flags.z = (reg_out == 0);
+        this->flags.n = false;
+        // this->flags.h = false; // TODO
+        // this->flags.c = false; // TODO
     }
 
     void cpu::SBC([[maybe_unused]] mmu &mmu, std::uint8_t& reg_out, std::uint8_t reg_in)
     {
         reg_out -= reg_in; // TODO
 
-        // TODO compute flags
+        this->flags.z = (reg_out == 0);
+        this->flags.n = true;
+        // this->flags.h = false; // TODO
+        // this->flags.c = false; // TODO
     }
 
     void cpu::XOR([[maybe_unused]] mmu &mmu, std::uint8_t& reg_out, std::uint8_t reg_in)
     {
         reg_out ^= reg_in;
 
-        // TODO compute flags
+        this->flags.z = (reg_out == 0);
+        this->flags.n = false;
+        this->flags.h = false;
+        this->flags.c = false;
     }
 
     void cpu::CP([[maybe_unused]] mmu &mmu, std::uint8_t& reg_out, std::uint8_t reg_in)
     {
         reg_out = ~reg_in;
 
-        // TODO compute flags
+        this->flags.z = (reg_out == 0);
+        this->flags.n = true;
+        this->flags.h = false; // TODO
+        this->flags.c = false; // TODO
     }
 
     void cpu::RET(mmu &mmu, bool condition)
@@ -2438,7 +2483,7 @@ namespace gbmu
 
     void cpu::ILLEGAL([[maybe_unused]] mmu &mmu, [[maybe_unused]] std::uint8_t code)
     {
-        throw; // TODO
+        // throw; // TODO
     }
 
     void cpu::DI(mmu &mmu)
