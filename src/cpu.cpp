@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/07 11:27:35 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/07 16:34:01 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/07 16:44:20 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -2306,6 +2306,8 @@ namespace gbmu
     void cpu::DEC([[maybe_unused]] mmu& mmu, std::uint16_t &reg)
     {
         reg -= 1;
+
+        // TODO adjust flags
     }
 
     void cpu::RRCA([[maybe_unused]] mmu &mmu)
@@ -2489,6 +2491,8 @@ namespace gbmu
         auto e8 = this->_read_byte(mmu);
 
         reg_out += e8;
+
+        // TODO adjust flags
     }
 
     void cpu::RETI(mmu &mmu)
@@ -2541,34 +2545,60 @@ namespace gbmu
 
     void cpu::RLC([[maybe_unused]] mmu &mmu, [[maybe_unused]] std::uint8_t& reg_out)
     {
+        // TODO
+
+        // TODO adjust flags
     }
 
     void cpu::RRC([[maybe_unused]] mmu &mmu, [[maybe_unused]] std::uint8_t& reg_out)
     {
+        // TODO
+
+        // TODO adjust flags
     }
 
     void cpu::RL([[maybe_unused]] mmu &mmu, [[maybe_unused]] std::uint8_t& reg_out)
     {
+        // TODO
+
+        // TODO adjust flags
     }
 
     void cpu::RR([[maybe_unused]] mmu &mmu, [[maybe_unused]] std::uint8_t& reg_out)
     {
+        // TODO
+
+        // TODO adjust flags
     }
 
     void cpu::SLA([[maybe_unused]] mmu &mmu, [[maybe_unused]] std::uint8_t& reg_out)
     {
+        // TODO
+
+        // TODO adjust flags
     }
 
     void cpu::SRA([[maybe_unused]] mmu &mmu, [[maybe_unused]] std::uint8_t& reg_out)
     {
+        // TODO
+
+        // TODO adjust flags
     }
 
-    void cpu::SWAP([[maybe_unused]] mmu &mmu, [[maybe_unused]] std::uint8_t& reg_out)
+    void cpu::SWAP([[maybe_unused]] mmu &mmu, std::uint8_t& reg_out)
     {
+        auto val = reg_out;
+
+        reg_out = (val >> 4) | (val << 4);
+
+        // TODO adjust flags
     }
 
     void cpu::SRL([[maybe_unused]] mmu &mmu, [[maybe_unused]] std::uint8_t& reg_out)
     {
+        // TODO
+
+        // TODO adjust flags
     }
 
     void cpu::BIT([[maybe_unused]] mmu &mmu, std::uint8_t bit, std::uint8_t& reg_out)
@@ -2587,5 +2617,4 @@ namespace gbmu
     {
         reg_out |= (1 << bit);
     }
-
 }
