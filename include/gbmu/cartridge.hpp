@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/07 19:27:46 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/08 00:27:41 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/08 09:46:25 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,31 @@
 
 namespace gbmu
 {
+    struct cartridge_header
+    {
+        std::uint8_t entrypoint[4];
+        std::uint8_t nintendo_logo[48];
+        std::uint8_t title[11];
+        std::uint8_t manufacturer_code[4];
+        std::uint8_t cgb_flag;
+        std::uint16_t new_licensee_code;
+        std::uint8_t sgb_flag;
+        std::uint8_t cartridge_type;
+        std::uint8_t rom_size;
+        std::uint8_t ram_size;
+        std::uint8_t destination_code;
+        std::uint8_t old_licensee_code;
+        std::uint8_t version_number;
+        std::uint8_t header_checksum;
+        std::uint16_t global_checksum;
+
+        bool check_logo() const;
+    };
+
+    constexpr static auto const CARTRIDGE_HEADER_SIZE = sizeof(cartridge_header);
+
+    static_assert(CARTRIDGE_HEADER_SIZE == 80);
+
     class mbc;
 
     class cartridge
@@ -123,15 +148,6 @@ namespace gbmu
     {
     public:
         mbc5(bool ram, bool battery, bool rumble);
-
-        std::uint8_t &operator[](std::uint16_t address);
-        std::uint8_t operator[](std::uint16_t address) const;
-    };
-
-    class mmm01 : public mbc
-    {
-    public:
-        mmm01(bool ram, bool battery);
 
         std::uint8_t &operator[](std::uint16_t address);
         std::uint8_t operator[](std::uint16_t address) const;

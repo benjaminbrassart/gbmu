@@ -6,11 +6,13 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/07 20:42:01 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/08 00:34:10 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/08 09:47:07 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "gbmu/cartridge.hpp"
+
+#include <algorithm>
 
 namespace gbmu
 {
@@ -19,6 +21,11 @@ namespace gbmu
         0x00, 0x08, 0x11, 0x1F, 0x88, 0x89, 0x00, 0x0E, 0xDC, 0xCC, 0x6E, 0xE6, 0xDD, 0xDD, 0xD9, 0x99,
         0xBB, 0xBB, 0x67, 0x63, 0x6E, 0x0E, 0xEC, 0xCC, 0xDD, 0xDC, 0x99, 0x9F, 0xBB, 0xB9, 0x33, 0x3E,
     };
+
+    bool cartridge_header::check_logo() const
+    {
+        return std::equal(std::begin(cartridge::NINTENDO_LOGO), std::end(cartridge::NINTENDO_LOGO), std::begin(this->nintendo_logo));
+    }
 
     cartridge::cartridge(std::istream &f) : _rom(nullptr), _ram(nullptr), _mbc(nullptr)
     {

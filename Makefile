@@ -6,7 +6,7 @@
 #    By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/10/07 11:07:29 by bbrassar          #+#    #+#              #
-#    Updated: 2023/10/07 21:10:02 by bbrassar         ###   ########.fr        #
+#    Updated: 2023/10/08 11:24:17 by bbrassar         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -16,6 +16,7 @@ CXX := clang++
 CXXFLAGS := -Wall -Werror -Wextra -Wshadow
 CXXFLAGS += -c
 CXXFLAGS += -g3
+CXXFLAGS += -MMD -MP
 CXXFLAGS += -Iinclude
 CXXFLAGS += -std=c++20
 
@@ -32,6 +33,7 @@ SRC := main.cpp
 SRC += cpu.cpp
 SRC += mmu.cpp
 SRC += cartridge.cpp
+SRC += debugger.cpp
 OBJ := $(SRC:%=$(DIR_OBJ)/%.o)
 DEP := $(OBJ:.o=.d)
 

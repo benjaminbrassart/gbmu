@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/07 11:42:22 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/07 11:47:40 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/08 10:22:55 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,8 @@
 
 namespace gbmu
 {
+    class cartridge;
+
     class mmu
     {
     private:
