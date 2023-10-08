@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/07 11:14:40 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/08 10:51:58 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/08 12:21:19 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,6 @@
 #include "gbmu/cartridge.hpp"
 #include "gbmu/cpu.hpp"
 #include "gbmu/debugger.hpp"
-#include "gbmu/emulator.hpp"
 #include "gbmu/mmu.hpp"
 
 #include <fstream>
