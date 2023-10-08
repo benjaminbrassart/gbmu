@@ -1,2 +1,5 @@
 /obj/
 /gbmu
+*.gbc
+*.gb
+*.header
