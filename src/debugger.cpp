@@ -6,13 +6,16 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/08 10:52:48 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/08 12:19:07 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/09 14:14:52 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "gbmu/debugger.hpp"
 #include "gbmu/cpu.hpp"
+#include "gbmu/exception.hpp"
 #include "gbmu/mmu.hpp"
+
+#include "format.hpp"
 
 #include <iomanip>
 #include <iostream>
@@ -21,26 +24,9 @@
 
 namespace gbmu
 {
-    struct hex
-    {
-    private:
-        std::uint64_t _addr;
-        std::size_t _w;
-    public:
-
-        hex(std::uint8_t addr) : _addr(addr), _w(2) {}
-        hex(std::uint16_t addr) : _addr(addr), _w(4) {}
-
-    public:
-        friend std::ostream &operator<<(std::ostream &os, hex const &a)
-        {
-            return os << "0x" << std::hex << std::setfill('0') << std::setw(a._w) << a._addr;
-        }
-    };
-
     debugger::debugger() :
         _breakpoints(),
-        _pause(true)
+        _pause(false)
     {
     }
 
@@ -48,12 +34,13 @@ namespace gbmu
 
     void debugger::step(cpu &cpu, mmu &mmu)
     {
-        if (this->_breakpoints[cpu.pc])
+        auto pc = cpu.pc;
+
+        if (this->_breakpoints[pc])
         {
             std::cout
-                << "Reached breakpoint at address 0x"
-                << std::hex << std::setw(4) << std::setfill('0')
-                << cpu.pc
+                << "Reached breakpoint at address "
+                << hex(pc)
                 << std::endl;
         }
         else if (this->_pause)
@@ -62,7 +49,27 @@ namespace gbmu
             return;
         }
 
-        cpu.step(mmu);
+        try
+        {
+            cpu.step(mmu);
+        }
+        catch (gbmu::illegal_instruction_exception const &e)
+        {
+            std::cout
+                << std::endl
+                << "  #########################" << std::endl
+                << "  #  ILLEGAL INSTRUCTION  #" << std::endl
+                << "  #########################" << std::endl
+                << "  #                       #" << std::endl
+                << "  # Address   Instruction #" << std::endl
+                << "  # " << hex(pc) << "    " << hex(e.code) << "        #" << std::endl
+                << "  #                       #" << std::endl
+                << "  #########################" << std::endl
+                << std::endl
+            ;
+            this->_pause = true;
+            return;
+        }
     }
 
     void debugger::_process_stdin(cpu &cpu, mmu &mmu)
