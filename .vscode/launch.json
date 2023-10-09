@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/gbmu",
-            "args": [],
+            "args": ["Pokemon - Jaune.gbc"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
@@ -25,6 +25,11 @@
                     "description": "Set Disassembly Flavor to Intel",
                     "text": "-gdb-set disassembly-flavor intel",
                     "ignoreFailures": true
+                },
+                {
+                    "description": "Set output format to hexadecimal",
+                    "text": "-gdb-set output-radix 16",
+                    "ignoreFailures": false
                 }
             ]
         }
