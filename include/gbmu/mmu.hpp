@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/07 11:42:22 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/08 10:22:55 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/09 02:27:18 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,5 +30,8 @@ namespace gbmu
     public:
         std::uint8_t &operator[](std::uint16_t address);
         std::uint8_t operator[](std::uint16_t address) const;
+
+        std::uint8_t read(std::uint16_t address) const;
+        void write(std::uint16_t address, std::uint8_t value);
     };
 }

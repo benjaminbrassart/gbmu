@@ -6,11 +6,13 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/07 20:42:01 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/08 09:47:07 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/09 04:06:34 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "gbmu/cartridge.hpp"
+
+#include "dbg.hpp"
 
 #include <algorithm>
 
@@ -27,75 +29,144 @@ namespace gbmu
         return std::equal(std::begin(cartridge::NINTENDO_LOGO), std::end(cartridge::NINTENDO_LOGO), std::begin(this->nintendo_logo));
     }
 
-    cartridge::cartridge(std::istream &f) : _rom(nullptr), _ram(nullptr), _mbc(nullptr)
+    std::uint8_t cartridge_header::compute_header_checksum() const
     {
-        f.seekg(0, std::ios::end);
+        auto raw = reinterpret_cast<std::uint8_t const *>(this);
+        std::uint8_t checksum = 0;
 
-        auto stream_size = f.tellg();
-
-        f.seekg(0, std::ios::beg);
-
-        this->_rom = new std::uint8_t[stream_size];
-
-        f.read(reinterpret_cast<char *>(this->_rom), stream_size);
-
-        if (!std::equal(std::begin(NINTENDO_LOGO), std::end(NINTENDO_LOGO), &this->_rom[0x0104], &this->_rom[0x0134]))
+        for (std::uint16_t address = 0x0134; address <= 0x14C; address += 1)
         {
-            throw; // TODO
+            checksum = checksum - raw[address - 0x0134] - 1;
         }
 
-        this->_mbc = mbc::get_mbc(static_cast<type>(this->_rom[0x0147]));
+        return checksum;
+    }
 
-        if (this->_mbc == nullptr)
+    cartridge::cartridge() : _mbc(nullptr)
+    {
+    }
+
+    cartridge::~cartridge()
+    {
+        delete this->_mbc;
+    }
+
+    bool cartridge::open(std::istream &f)
+    {
+        char raw_header[gbmu::INT_VECTORS_SIZE + gbmu::CARTRIDGE_HEADER_SIZE];
+        auto header = reinterpret_cast<cartridge_header *>(&raw_header[gbmu::INT_VECTORS_SIZE]);
+
+        if (!dbg(f.read(raw_header, sizeof(raw_header))) || !dbg(header->check_logo()))
         {
-            throw; // TODO
+            return false;
         }
 
+        {
+            auto chk = header->compute_header_checksum();
+
+            std::cout << static_cast<int>(chk) << std::endl;
+
+            if (!dbg(chk == header->header_checksum))
+            {
+                return false;
+            }
+        }
+
+        /*
+         * Get actual ROM size from id
+         *
+         * Some unofficial documentations mention other values:
+         *   - 0x52 = 1.1 MiB, 72 banks
+         *   - 0x53 = 1.2 MiB, 80 banks
+         *   - 0x54 = 1.5 MiB, 96 banks
+         *
+         * It is unlikely that these will ever show up,
+         * but support can easily be provided if needed.
+         */
+
+        std::size_t rom_size;
+
+        switch (header->rom_size)
+        {
+        case 0x00: // 32 KiB
+        case 0x01: // 64 KiB
+        case 0x02: // 128 KiB
+        case 0x03: // 256 KiB
+        case 0x04: // 512 KiB
+        case 0x05: // 1 MiB
+        case 0x06: // 2 MiB
+        case 0x07: // 4 MiB
+        case 0x08: // 8 MiB
+        {
+            rom_size = 32 * 1024 * (1 << header->rom_size);
+        } break;
+
+        default:
+        {
+            return false;
+        } break;
+        }
+
+        /*
+         * Get actual RAM size from id
+         *
+         * Some unofficial documentations mention value 0x01 as 2 KiB RAM chip.
+         * Although a 2 KiB RAM chip was never used in an actual cartridge,
+         * various homebrew roms make use of RAM size id 0x01.
+         */
         std::size_t ram_size;
 
-        switch (this->_rom[0x0149])
+        switch (header->ram_size)
         {
         case 0x00: {
             ram_size = 0;
         } break;
 
         case 0x01: {
-            ram_size = 1 << 11;
+            ram_size = 2 * 1024;
         } break;
 
         case 0x02: {
-            ram_size = 1 << 13;
+            ram_size = 8 * 1024;
         } break;
 
         case 0x03: {
-            ram_size = 1 << 15;
+            ram_size = 32 * 1024;
         } break;
 
         case 0x04: {
-            ram_size = 1 << 17;
+            ram_size = 128 * 1024;
         } break;
 
         case 0x05: {
-            ram_size = 1 << 16;
+            ram_size = 64 * 1024;
         } break;
 
         default: {
-            throw; // TODO
+            return false;
         } break;
         }
 
-        this->_ram = new std::uint8_t[ram_size];
+        [[maybe_unused]] auto rom = new std::uint8_t[rom_size];
+        [[maybe_unused]] auto ram = new std::uint8_t[ram_size];
+
+        std::copy(std::begin(raw_header), std::end(raw_header), rom);
+
+        this->_mbc = mbc::get_mbc(header->cartridge_type, rom_size, ram_size);
+
+        if (dbg(this->_mbc == nullptr))
+        {
+            return false;
+        }
+
+        return true;
     }
 
-    cartridge::~cartridge()
+    mbc *mbc::get_mbc(cartridge_type t, std::size_t rom_size, std::size_t ram_size)
     {
-        delete[] this->_rom;
-        delete[] this->_ram;
-        delete this->_mbc;
-    }
+        (void)rom_size;
+        (void)ram_size;
 
-    mbc *mbc::get_mbc(cartridge::type t)
-    {
         switch (t)
         {
         // case cartridge::type::ROM_ONLY: return new rom(false, false);
