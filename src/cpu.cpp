@@ -6,12 +6,13 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/07 11:27:35 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/07 19:21:13 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/09 16:45:54 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "gbmu/cpu.hpp"
 #include "gbmu/mmu.hpp"
+#include "gbmu/exception.hpp"
 
 #include <iomanip>
 #include <iostream>
@@ -50,6 +51,20 @@ namespace gbmu
 
     void cpu::step(mmu &mmu)
     {
+        // handle interrupts
+        constexpr static std::uint8_t const IF_MASK = 0x1F;
+
+        int interrupts = IF_MASK & mmu[0xFF0F] & mmu[0xFFFF];
+
+        for (int i = 0; i < 5; i += 1)
+        {
+            if ((interrupts & (1 << i)) != 0)
+            {
+                this->_handle_interrupt(mmu, i);
+                return;
+            }
+        }
+
         std::uint8_t code = this->_read_byte(mmu);
 
         this->_handle_instruction(mmu, code);
@@ -69,6 +84,11 @@ namespace gbmu
         hi_lo pair(this->_read_byte(mmu), this->_read_byte(mmu));
 
         return pair.value;
+    }
+
+    void cpu::_handle_interrupt(mmu &mmu, int interrupt)
+    {
+        this->_call(mmu, 0x40 + (interrupt * 8));
     }
 
     void cpu::_handle_instruction(mmu &mmu, std::uint8_t code)
@@ -205,7 +225,7 @@ namespace gbmu
             this->SCF(mmu);
         } break;
 
-        case 0x08: {
+        case 0x08: { // LD [a16] SP
             auto address = this->_read_word(mmu);
             hi_lo value(this->sp);
 
@@ -1001,11 +1021,6 @@ namespace gbmu
             auto e8 = this->_read_byte(mmu);
 
             this->LD(mmu, this->hl, static_cast<std::uint16_t>(this->sp + e8));
-
-            this->flags.z = false;
-            this->flags.n = false;
-            // this->flags.h = false; // TODO
-            // this->flags.c = false; // TODO
         } break;
 
         case 0xC9: {
@@ -2169,7 +2184,7 @@ namespace gbmu
         this->pc += offset;
     }
 
-    void cpu::NOP([[maybe_unused]] mmu &mmu)
+    void cpu::NOP(mmu &)
     {
     }
 
@@ -2206,9 +2221,7 @@ namespace gbmu
 
         this->sp -= 1;
 
-        hi_lo pair(hi, lo);
-
-        return pair.value;
+        return hi_lo(hi, lo).value;
     }
 
     void cpu::STOP(mmu &mmu)
@@ -2216,7 +2229,7 @@ namespace gbmu
         auto n8 = this->_read_byte(mmu);
 
         if (n8 != 0) {
-            // throw; // TODO
+            // throw; // TODO throw real exception
         }
     }
 
@@ -2242,21 +2255,23 @@ namespace gbmu
         mmu[out_reg] = in_reg;
     }
 
-    void cpu::INC([[maybe_unused]] mmu& mmu, std::uint16_t &reg)
+    void cpu::INC(mmu &, std::uint16_t &reg)
     {
         reg += 1;
     }
 
-    void cpu::INC([[maybe_unused]] mmu& mmu, std::uint8_t &reg)
+    void cpu::INC(mmu &, std::uint8_t &reg)
     {
+        std::uint8_t orig = reg;
+
         reg += 1;
 
         this->flags.z = (reg == 0);
         this->flags.n = false;
-        // this->flags.h = true; // TODO
+        this->flags.h = ((orig & 0x0F) + 1) > 0x0F;
     }
 
-    void cpu::DEC([[maybe_unused]] mmu& mmu, std::uint8_t &reg)
+    void cpu::DEC(mmu &, std::uint8_t &reg)
     {
         reg -= 1;
 
@@ -2272,7 +2287,7 @@ namespace gbmu
         reg = val;
     }
 
-    void cpu::RLCA([[maybe_unused]] mmu &mmu)
+    void cpu::RLCA(mmu &)
     {
         // TODO
 
@@ -2282,7 +2297,7 @@ namespace gbmu
         // this->flags.c = false; // TODO
     }
 
-    void cpu::RLA([[maybe_unused]] mmu &mmu)
+    void cpu::RLA(mmu &)
     {
         // TODO
 
@@ -2292,7 +2307,7 @@ namespace gbmu
         // this->flags.c = false; // TODO
     }
 
-    void cpu::DAA([[maybe_unused]] mmu &mmu)
+    void cpu::DAA(mmu &)
     {
         // TODO
 
@@ -2301,16 +2316,14 @@ namespace gbmu
         // this->flags.c = false; // TODO
     }
 
-    void cpu::SCF([[maybe_unused]] mmu &mmu)
+    void cpu::SCF(mmu &)
     {
-        // TODO
-
         this->flags.n = false;
         this->flags.h = false;
         this->flags.c = true;
     }
 
-    void cpu::ADD([[maybe_unused]] mmu& mmu, std::uint16_t &reg_out, std::uint16_t reg_in)
+    void cpu::ADD(mmu &, std::uint16_t &reg_out, std::uint16_t reg_in)
     {
         reg_out += reg_in;
 
@@ -2326,59 +2339,61 @@ namespace gbmu
         reg_out = val;
     }
 
-    void cpu::DEC([[maybe_unused]] mmu& mmu, std::uint16_t &reg)
+    void cpu::DEC(mmu &, std::uint16_t &reg)
     {
         reg -= 1;
     }
 
-    void cpu::RRCA([[maybe_unused]] mmu &mmu)
+    void cpu::RRCA(mmu &)
     {
-        // TODO
+        std::uint8_t orig = this->a;
+
+        this->a = (this->a >> 1) | ((orig & (1 << 0)) << 7);
 
         this->flags.z = false;
         this->flags.n = false;
         this->flags.h = false;
-        // this->flags.c = false; // TODO
+        this->flags.c = (orig & (1 << 0)) != 0;
     }
 
-    void cpu::RRA([[maybe_unused]] mmu &mmu)
+    void cpu::RRA(mmu &)
     {
-        // TODO
+        std::uint8_t orig = this->a;
+
+        this->a >>= 1;
 
         this->flags.z = false;
         this->flags.n = false;
         this->flags.h = false;
-        // this->flags.c = false; // TODO
+        this->flags.c = (orig & (1 << 0)) != 0;
     }
 
-    void cpu::CPL([[maybe_unused]] mmu &mmu)
+    void cpu::CPL(mmu &)
     {
-        // TODO
+        this->a = ~this->a;
 
         this->flags.n = true;
         this->flags.h = true;
     }
 
-    void cpu::CCF([[maybe_unused]] mmu &mmu)
+    void cpu::CCF(mmu &)
     {
-        // TODO
-
         this->flags.n = false;
         this->flags.h = false;
-        // this->flags.c = false; // TODO
+        this->flags.c = !this->flags.c;
     }
 
-    void cpu::LD([[maybe_unused]] mmu &mmu, std::uint8_t &reg_out, std::uint8_t reg_in)
+    void cpu::LD(mmu &, std::uint8_t &reg_out, std::uint8_t reg_in)
     {
         reg_out = reg_in;
     }
 
-    void cpu::HALT([[maybe_unused]] mmu &mmu)
+    void cpu::HALT(mmu &)
     {
         // TODO
     }
 
-    void cpu::ADD([[maybe_unused]] mmu &mmu, std::uint8_t& reg_out, std::uint8_t reg_in)
+    void cpu::ADD(mmu &, std::uint8_t& reg_out, std::uint8_t reg_in)
     {
         reg_out += reg_in;
 
@@ -2388,7 +2403,7 @@ namespace gbmu
         // this->flags.c = false; // TODO
     }
 
-    void cpu::SUB([[maybe_unused]] mmu &mmu, std::uint8_t& reg_out, std::uint8_t reg_in)
+    void cpu::SUB(mmu &, std::uint8_t& reg_out, std::uint8_t reg_in)
     {
         reg_out -= reg_in;
 
@@ -2398,7 +2413,7 @@ namespace gbmu
         // this->flags.c = false; // TODO
     }
 
-    void cpu::AND([[maybe_unused]] mmu &mmu, std::uint8_t& reg_out, std::uint8_t reg_in)
+    void cpu::AND(mmu &, std::uint8_t& reg_out, std::uint8_t reg_in)
     {
         reg_out &= reg_in;
 
@@ -2408,7 +2423,7 @@ namespace gbmu
         this->flags.c = false;
     }
 
-    void cpu::OR([[maybe_unused]] mmu &mmu, std::uint8_t& reg_out, std::uint8_t reg_in)
+    void cpu::OR(mmu &, std::uint8_t& reg_out, std::uint8_t reg_in)
     {
         reg_out |= reg_in;
 
@@ -2418,27 +2433,17 @@ namespace gbmu
         this->flags.c = false;
     }
 
-    void cpu::ADC([[maybe_unused]] mmu &mmu, std::uint8_t& reg_out, std::uint8_t reg_in)
+    void cpu::ADC(mmu &mmu, std::uint8_t& reg_out, std::uint8_t reg_in)
     {
-        reg_out += reg_in; // TODO
-
-        this->flags.z = (reg_out == 0);
-        this->flags.n = false;
-        // this->flags.h = false; // TODO
-        // this->flags.c = false; // TODO
+        this->ADD(mmu, reg_out, reg_in + (this->flags.c ? 1 : 0));
     }
 
-    void cpu::SBC([[maybe_unused]] mmu &mmu, std::uint8_t& reg_out, std::uint8_t reg_in)
+    void cpu::SBC(mmu &mmu, std::uint8_t& reg_out, std::uint8_t reg_in)
     {
-        reg_out -= reg_in; // TODO
-
-        this->flags.z = (reg_out == 0);
-        this->flags.n = true;
-        // this->flags.h = false; // TODO
-        // this->flags.c = false; // TODO
+        this->SUB(mmu, reg_out, reg_in + (this->flags.c ? 1 : 0));
     }
 
-    void cpu::XOR([[maybe_unused]] mmu &mmu, std::uint8_t& reg_out, std::uint8_t reg_in)
+    void cpu::XOR(mmu &, std::uint8_t& reg_out, std::uint8_t reg_in)
     {
         reg_out ^= reg_in;
 
@@ -2448,7 +2453,7 @@ namespace gbmu
         this->flags.c = false;
     }
 
-    void cpu::CP([[maybe_unused]] mmu &mmu, std::uint8_t& reg_out, std::uint8_t reg_in)
+    void cpu::CP(mmu &, std::uint8_t& reg_out, std::uint8_t reg_in)
     {
         reg_out = ~reg_in;
 
@@ -2481,14 +2486,14 @@ namespace gbmu
         }
     }
 
-    void cpu::ILLEGAL([[maybe_unused]] mmu &mmu, [[maybe_unused]] std::uint8_t code)
+    void cpu::ILLEGAL(mmu &, std::uint8_t code)
     {
-        // throw; // TODO
+        throw gbmu::illegal_instruction_exception(code);
     }
 
     void cpu::DI(mmu &mmu)
     {
-        mmu[0xFFFF] = 0x00;
+        mmu[0xFFFF] = 0x00; // TODO delay IME = 0 by one instruction
     }
 
     void cpu::CALL(mmu &mmu, bool condition)
@@ -2546,12 +2551,12 @@ namespace gbmu
         this->EI(mmu);
     }
 
-    void cpu::JP([[maybe_unused]] mmu &mmu, std::uint16_t reg)
+    void cpu::JP(mmu &, std::uint16_t reg)
     {
         this->pc = reg;
     }
 
-    void cpu::LD([[maybe_unused]] mmu &mmu, std::uint16_t &reg_out, std::uint16_t reg_in)
+    void cpu::LD(mmu &, std::uint16_t &reg_out, std::uint16_t reg_in)
     {
         reg_out = reg_in;
     }
@@ -2565,7 +2570,7 @@ namespace gbmu
 
     void cpu::EI(mmu &mmu)
     {
-        mmu[0xFFFF] = 0x01;
+        mmu[0xFFFF] = 0x01; // TODO delay IME = 1 by one instruction
     }
 
     void cpu::ADC(mmu &mmu, std::uint8_t& reg_out)
@@ -2588,77 +2593,112 @@ namespace gbmu
         this->CP(mmu, reg_out, this->_read_byte(mmu));
     }
 
-    void cpu::RLC([[maybe_unused]] mmu &mmu, [[maybe_unused]] std::uint8_t& reg_out)
+    void cpu::RLC(mmu &, [[maybe_unused]] std::uint8_t& reg_out)
+    {
+        std::uint8_t orig = reg_out;
+
+        reg_out <<= 1;
+
+        this->flags.z = (reg_out == 0);
+        this->flags.n = false;
+        this->flags.h = false;
+        this->flags.c = (orig & (1 << 7)) != 0;
+    }
+
+    void cpu::RRC(mmu &, std::uint8_t& reg_out)
+    {
+        std::uint8_t orig = reg_out;
+
+        reg_out >>= 1;
+
+        this->flags.z = (reg_out == 0);
+        this->flags.n = false;
+        this->flags.h = false;
+        this->flags.c = (orig & (1 << 0)) != 0;
+    }
+
+    void cpu::RL(mmu &, [[maybe_unused]] std::uint8_t& reg_out)
     {
         // TODO
 
         // TODO adjust flags
     }
 
-    void cpu::RRC([[maybe_unused]] mmu &mmu, [[maybe_unused]] std::uint8_t& reg_out)
+    void cpu::RR(mmu &, [[maybe_unused]] std::uint8_t& reg_out)
     {
         // TODO
 
         // TODO adjust flags
     }
 
-    void cpu::RL([[maybe_unused]] mmu &mmu, [[maybe_unused]] std::uint8_t& reg_out)
+    void cpu::SLA(mmu &, std::uint8_t& reg_out)
     {
-        // TODO
+        auto orig = reg_out;
 
-        // TODO adjust flags
+        // shift left
+        // set bit 0 to 0
+        reg_out = (orig << 1) & ~(1 << 0);
+
+        this->flags.z = (reg_out == 0);
+        this->flags.n = false;
+        this->flags.h = false;
+        this->flags.c = (orig & (1 << 7)) != 0;
     }
 
-    void cpu::RR([[maybe_unused]] mmu &mmu, [[maybe_unused]] std::uint8_t& reg_out)
+    void cpu::SRA(mmu &, std::uint8_t& reg_out)
     {
-        // TODO
+        auto orig = reg_out;
 
-        // TODO adjust flags
+        // set bit 7 to 0
+        // shift right
+        // set bit 7 to old bit 7
+        reg_out = ((orig & ~(1 << 7)) >> 1) | (orig & (1 << 7));
+
+        this->flags.z = (reg_out == 0);
+        this->flags.n = false;
+        this->flags.h = false;
+        this->flags.c = (orig & (1 << 0)) != 0;
     }
 
-    void cpu::SLA([[maybe_unused]] mmu &mmu, [[maybe_unused]] std::uint8_t& reg_out)
+    void cpu::SWAP(mmu &, std::uint8_t& reg_out)
     {
-        // TODO
+        auto orig = reg_out;
 
-        // TODO adjust flags
+        reg_out = (orig >> 4) | (orig << 4);
+
+        this->flags.z = (reg_out == 0);
+        this->flags.n = false;
+        this->flags.h = false;
+        this->flags.c = false;
     }
 
-    void cpu::SRA([[maybe_unused]] mmu &mmu, [[maybe_unused]] std::uint8_t& reg_out)
+    void cpu::SRL(mmu &, std::uint8_t& reg_out)
     {
-        // TODO
+        auto orig = reg_out;
 
-        // TODO adjust flags
+        // shift right
+        // set bit 7 to 0
+        reg_out = (orig >> 1) & ~(1 << 7);
+
+        this->flags.z = (reg_out == 0);
+        this->flags.n = false;
+        this->flags.h = false;
+        this->flags.c = (orig & (1 << 0)) != 0;
     }
 
-    void cpu::SWAP([[maybe_unused]] mmu &mmu, std::uint8_t& reg_out)
-    {
-        auto val = reg_out;
-
-        reg_out = (val >> 4) | (val << 4);
-
-        // TODO adjust flags
-    }
-
-    void cpu::SRL([[maybe_unused]] mmu &mmu, [[maybe_unused]] std::uint8_t& reg_out)
-    {
-        // TODO
-
-        // TODO adjust flags
-    }
-
-    void cpu::BIT([[maybe_unused]] mmu &mmu, std::uint8_t bit, std::uint8_t& reg_out)
+    void cpu::BIT(mmu &, std::uint8_t bit, std::uint8_t& reg_out)
     {
         this->flags.z = (reg_out & (1 << bit)) == 0;
         this->flags.n = false;
         this->flags.h = true;
     }
 
-    void cpu::RES([[maybe_unused]] mmu &mmu, std::uint8_t bit, std::uint8_t& reg_out)
+    void cpu::RES(mmu &, std::uint8_t bit, std::uint8_t& reg_out)
     {
         reg_out &= ~(1 << bit);
     }
 
-    void cpu::SET([[maybe_unused]] mmu &mmu, std::uint8_t bit, std::uint8_t& reg_out)
+    void cpu::SET(mmu &, std::uint8_t bit, std::uint8_t& reg_out)
     {
         reg_out |= (1 << bit);
     }
