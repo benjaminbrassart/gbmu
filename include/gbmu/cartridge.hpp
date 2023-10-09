@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/07 19:27:46 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/09 04:00:25 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/09 14:23:09 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,15 +76,14 @@ namespace gbmu
 
     static_assert(sizeof(cartridge_header) == CARTRIDGE_HEADER_SIZE);
 
-    class mbc;
-
     class cartridge
     {
     public:
         static std::uint8_t const NINTENDO_LOGO[48];
 
     private:
-        mbc *_mbc;
+        std::uint8_t *_rom;
+        std::uint8_t *_ram;
 
     public:
         cartridge();
@@ -95,63 +94,6 @@ namespace gbmu
     bool open(std::istream &f);
 
     public:
-        std::uint8_t &operator[](std::uint16_t address);
-        std::uint8_t operator[](std::uint16_t address) const;
-    };
-
-    class mbc
-    {
-    public:
-        virtual ~mbc() = default;
-
-        virtual std::uint8_t &operator[](std::uint16_t address) = 0;
-        virtual std::uint8_t operator[](std::uint16_t address) const = 0;
-
-    public:
-        static mbc *get_mbc(cartridge_type t, std::size_t rom_size, std::size_t ram_size);
-    };
-
-    class rom : public mbc
-    {
-    public:
-        rom(bool ram, bool battery);
-
-        std::uint8_t &operator[](std::uint16_t address);
-        std::uint8_t operator[](std::uint16_t address) const;
-    };
-
-    class mbc1 : public mbc
-    {
-    public:
-        mbc1(bool ram, bool battery);
-
-        std::uint8_t &operator[](std::uint16_t address);
-        std::uint8_t operator[](std::uint16_t address) const;
-    };
-
-    class mbc2 : public mbc
-    {
-    public:
-        mbc2(bool battery);
-
-        std::uint8_t &operator[](std::uint16_t address);
-        std::uint8_t operator[](std::uint16_t address) const;
-    };
-
-    class mbc3 : public mbc
-    {
-    public:
-        mbc3(bool ram, bool battery, bool timer);
-
-        std::uint8_t &operator[](std::uint16_t address);
-        std::uint8_t operator[](std::uint16_t address) const;
-    };
-
-    class mbc5 : public mbc
-    {
-    public:
-        mbc5(bool ram, bool battery, bool rumble);
-
         std::uint8_t &operator[](std::uint16_t address);
         std::uint8_t operator[](std::uint16_t address) const;
     };
