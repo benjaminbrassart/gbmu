@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/07 11:22:32 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/07 16:33:48 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/09 16:43:32 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,16 +22,24 @@ namespace gbmu
     {
     public:
         union {
+            /** AF register pair */
             std::uint16_t af;
             struct {
+                /** AF high byte */
                 std::uint8_t a;
                 union {
+                /** AF low byte */
                     std::uint8_t f;
+                    /** Flags */
                     struct {
                     public:
+                        /** zero flag */
                         bool z: 1;
+                        /** subtract flag */
                         bool n: 1;
+                        /** half-carry flag */
                         bool h: 1;
+                        /** carry flag */
                         bool c: 1;
                     private:
                         std::uint8_t: 4;
@@ -40,27 +48,38 @@ namespace gbmu
             };
         };
         union {
+            /** BC register pair */
             std::uint16_t bc;
             struct {
+                /** BC high byte */
                 std::uint8_t b;
+                /** BC low byte */
                 std::uint8_t c;
             };
         };
         union {
+            /** DE register pair */
             std::uint16_t de;
             struct {
+                /** DE high byte */
                 std::uint8_t d;
+                /** DE low byte */
                 std::uint8_t e;
             };
         };
         union {
+            /** HL register pair */
             std::uint16_t hl;
             struct {
+                /** HL high byte */
                 std::uint8_t h;
+                /** HL low byte */
                 std::uint8_t l;
             };
         };
+        /** Program counter */
         std::uint16_t pc;
+        /** Stack pointer */
         std::uint16_t sp;
 
     public:
@@ -68,22 +87,74 @@ namespace gbmu
         ~cpu();
 
     public:
+        /**
+         * Handle highest-priority interrupt if any.
+         * Handle instruction otherwise.
+         */
         void step(mmu &mmu);
 
     private:
+        /**
+         * Read the next byte, and increase the program counter
+         */
         std::uint8_t _read_byte(mmu &mmu);
+
+        /**
+         * Read the next two bytes, and increase the program counter twice
+         */
         std::uint16_t _read_word(mmu &mmu);
+
+        /**
+         * Handle incoming interrupt
+         *
+         * Interrupts:
+         * - 0x40: VBlank
+         * - 0x48: STAT
+         * - 0x50: Timer
+         * - 0x58: Serial
+         * - 0x60: Joypad
+         */
+        void _handle_interrupt(mmu &mmu, int interrupt);
+
+        /**
+         * Handle CPU instruction
+         */
         void _handle_instruction(mmu &mmu, std::uint8_t code);
+
+        /**
+         * Handle 0xCB-prefixed CPU instruction
+         */
         void _handle_instruction_prefix(mmu &mmu, std::uint8_t code);
 
     private:
+        /**
+         * Set program counter to absolute address
+         */
         void _jump(std::uint16_t address);
+
+        /**
+         * Increment program counter by an offset
+         */
         void _jump_relative(std::uint8_t offset);
 
+        /**
+         * Push program counter to the stack, then jump
+         */
         void _call(mmu &mmu, std::uint16_t address);
+
+        /**
+         * Pop program counter from the stack, then jump
+         */
         void _ret(mmu &mmu);
 
+        /**
+         * Push 2 bytes on the stack
+         */
         void _push(mmu &mmu, std::uint16_t value);
+
+        /**
+         * Pop 2 bytes from the stack
+         */
         std::uint16_t _pop(mmu &mmu);
 
     private:
