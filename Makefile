@@ -6,14 +6,14 @@
 #    By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/10/07 11:07:29 by bbrassar          #+#    #+#              #
-#    Updated: 2023/10/08 11:24:17 by bbrassar         ###   ########.fr        #
+#    Updated: 2023/10/09 12:16:14 by bbrassar         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME := gbmu
 
 CXX := clang++
-CXXFLAGS := -Wall -Werror -Wextra -Wshadow
+CXXFLAGS := -Wall -Werror -Wextra -Wshadow -Wsuggest-override
 CXXFLAGS += -c
 CXXFLAGS += -g3
 CXXFLAGS += -MMD -MP
@@ -30,6 +30,8 @@ DIR_SRC := src
 DIR_OBJ := obj
 
 SRC := main.cpp
+SRC += format.cpp
+SRC += exception.cpp
 SRC += cpu.cpp
 SRC += mmu.cpp
 SRC += cartridge.cpp
