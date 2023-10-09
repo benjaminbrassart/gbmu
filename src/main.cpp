@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/07 11:14:40 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/09 02:44:43 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/09 14:28:10 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include "gbmu/cartridge.hpp"
 #include "gbmu/cpu.hpp"
 #include "gbmu/debugger.hpp"
+#include "gbmu/exception.hpp"
 #include "gbmu/mmu.hpp"
 
 #include <fstream>
@@ -53,11 +54,19 @@ int main(int argc, char const *argv[])
 
     gbmu::debugger debugger;
     gbmu::cpu cpu;
-    gbmu::mmu mmu;
+    gbmu::mmu mmu(cartridge);
 
     while (true)
     {
-        debugger.step(cpu, mmu);
+        try
+        {
+            debugger.step(cpu, mmu);
+        }
+        catch (std::exception const &e)
+        {
+            std::cerr << "gbmu: " << e.what() << std::endl;
+            return EXIT_FAILURE;
+        }
     }
 
     return EXIT_SUCCESS;
