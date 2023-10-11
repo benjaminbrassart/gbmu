@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/07 11:22:32 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/09 16:43:32 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/11 15:45:21 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -210,6 +210,7 @@ namespace gbmu
         void SBC(mmu &mmu, std::uint8_t& reg_out);
         void XOR(mmu &mmu, std::uint8_t& reg_out);
         void CP(mmu &mmu, std::uint8_t& reg_out);
+
         void RLC(mmu &mmu, std::uint8_t& reg_out);
         void RRC(mmu &mmu, std::uint8_t& reg_out);
         void RL(mmu &mmu, std::uint8_t& reg_out);
@@ -221,5 +222,20 @@ namespace gbmu
         void BIT(mmu &mmu, std::uint8_t bit, std::uint8_t& reg_out);
         void RES(mmu &mmu, std::uint8_t bit, std::uint8_t& reg_out);
         void SET(mmu &mmu, std::uint8_t bit, std::uint8_t& reg_out);
+
+        void INC(mmu& mmu, std::uint16_t address, bool);
+        void DEC(mmu& mmu, std::uint16_t address, bool);
+        void LD(mmu& mmu, std::uint16_t address, bool);
+        void RLC(mmu &mmu, std::uint16_t address, bool);
+        void RRC(mmu &mmu, std::uint16_t address, bool);
+        void RL(mmu &mmu, std::uint16_t address, bool);
+        void RR(mmu &mmu, std::uint16_t address, bool);
+        void SLA(mmu &mmu, std::uint16_t address, bool);
+        void SRA(mmu &mmu, std::uint16_t address, bool);
+        void SWAP(mmu &mmu, std::uint16_t address, bool);
+        void SRL(mmu &mmu, std::uint16_t address, bool);
+        void BIT(mmu &mmu, std::uint8_t bit, std::uint16_t address, bool);
+        void RES(mmu &mmu, std::uint8_t bit, std::uint16_t address, bool);
+        void SET(mmu &mmu, std::uint8_t bit, std::uint16_t address, bool);
     };
 }

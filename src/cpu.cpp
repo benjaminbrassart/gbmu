@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/07 11:27:35 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/09 16:45:54 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/11 15:47:41 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,7 @@ namespace gbmu
         // handle interrupts
         constexpr static std::uint8_t const IF_MASK = 0x1F;
 
-        int interrupts = IF_MASK & mmu[0xFF0F] & mmu[0xFFFF];
+        int interrupts = IF_MASK & mmu.read(0xFF0F) & mmu.read(0xFFFF);
 
         for (int i = 0; i < 5; i += 1)
         {
@@ -72,7 +72,7 @@ namespace gbmu
 
     std::uint8_t cpu::_read_byte(mmu &mmu)
     {
-        std::uint8_t b = mmu[this->pc];
+        std::uint8_t b = mmu.read(this->pc);
 
         this->pc += 1;
 
@@ -174,7 +174,7 @@ namespace gbmu
         } break;
 
         case 0x34: {
-            this->INC(mmu, mmu[this->hl]);
+            this->INC(mmu, this->hl, true);
         } break;
 
         case 0x05: {
@@ -190,7 +190,7 @@ namespace gbmu
         } break;
 
         case 0x35: {
-            this->DEC(mmu, mmu[this->hl]);
+            this->DEC(mmu, this->hl, true);
         } break;
 
         case 0x06: {
@@ -206,7 +206,7 @@ namespace gbmu
         } break;
 
         case 0x36: {
-            this->LD(mmu, mmu[this->hl]);
+            this->LD(mmu, this->hl, true);
         } break;
 
         case 0x07: {
@@ -229,8 +229,8 @@ namespace gbmu
             auto address = this->_read_word(mmu);
             hi_lo value(this->sp);
 
-            mmu[address] = value.lo;
-            mmu[address + 1] = value.hi;
+            mmu.write(address, value.lo);
+            mmu.write(address + 1, value.hi);
 
             // TODO check if working
         } break;
@@ -374,7 +374,7 @@ namespace gbmu
         } break;
 
         case 0x70: {
-            this->LD(mmu, mmu[this->hl], this->b);
+            this->LD(mmu, this->hl, this->b);
         } break;
 
         case 0x41: {
@@ -390,7 +390,7 @@ namespace gbmu
         } break;
 
         case 0x71: {
-            this->LD(mmu, mmu[this->hl], this->c);
+            this->LD(mmu, this->hl, this->c);
         } break;
 
         case 0x42: {
@@ -406,7 +406,7 @@ namespace gbmu
         } break;
 
         case 0x72: {
-            this->LD(mmu, mmu[this->hl], this->d);
+            this->LD(mmu, this->hl, this->d);
         } break;
 
         case 0x43: {
@@ -422,7 +422,7 @@ namespace gbmu
         } break;
 
         case 0x73: {
-            this->LD(mmu, mmu[this->hl], this->e);
+            this->LD(mmu, this->hl, this->e);
         } break;
 
         case 0x44: {
@@ -438,7 +438,7 @@ namespace gbmu
         } break;
 
         case 0x74: {
-            this->LD(mmu, mmu[this->hl], this->h);
+            this->LD(mmu, this->hl, this->h);
         } break;
 
         case 0x45: {
@@ -454,19 +454,19 @@ namespace gbmu
         } break;
 
         case 0x75: {
-            this->LD(mmu, mmu[this->hl], this->l);
+            this->LD(mmu, this->hl, this->l);
         } break;
 
         case 0x46: {
-            this->LD(mmu, this->b, mmu[this->hl]);
+            this->LD(mmu, this->b, this->hl);
         } break;
 
         case 0x56: {
-            this->LD(mmu, this->d, mmu[this->hl]);
+            this->LD(mmu, this->d, this->hl);
         } break;
 
         case 0x66: {
-            this->LD(mmu, this->h, mmu[this->hl]);
+            this->LD(mmu, this->h, this->hl);
         } break;
 
         case 0x76: {
@@ -486,7 +486,7 @@ namespace gbmu
         } break;
 
         case 0x77: {
-            this->LD(mmu, mmu[this->hl], this->a);
+            this->LD(mmu, this->hl, this->a);
         } break;
 
         case 0x48: {
@@ -586,19 +586,19 @@ namespace gbmu
         } break;
 
         case 0x4E: {
-            this->LD(mmu, this->c, mmu[this->hl]);
+            this->LD(mmu, this->c, this->hl);
         } break;
 
         case 0x5E: {
-            this->LD(mmu, this->e, mmu[this->hl]);
+            this->LD(mmu, this->e, this->hl);
         } break;
 
         case 0x6E: {
-            this->LD(mmu, this->l, mmu[this->hl]);
+            this->LD(mmu, this->l, this->hl);
         } break;
 
         case 0x7E: {
-            this->LD(mmu, this->a, mmu[this->hl]);
+            this->LD(mmu, this->a, this->hl);
         } break;
 
         case 0x4F: {
@@ -714,19 +714,19 @@ namespace gbmu
         } break;
 
         case 0x86: {
-            this->ADD(mmu, this->a, mmu[this->hl]);
+            this->ADD(mmu, this->a, mmu.read(this->hl));
         } break;
 
         case 0x96: {
-            this->SUB(mmu, this->a, mmu[this->hl]);
+            this->SUB(mmu, this->a, mmu.read(this->hl));
         } break;
 
         case 0xA6: {
-            this->AND(mmu, this->a, mmu[this->hl]);
+            this->AND(mmu, this->a, mmu.read(this->hl));
         } break;
 
         case 0xB6: {
-            this->OR(mmu, this->a, mmu[this->hl]);
+            this->OR(mmu, this->a, mmu.read(this->hl));
         } break;
 
         case 0x87: {
@@ -842,19 +842,19 @@ namespace gbmu
         } break;
 
         case 0x8E: {
-            this->ADC(mmu, this->a, mmu[this->hl]);
+            this->ADC(mmu, this->a, mmu.read(this->hl));
         } break;
 
         case 0x9E: {
-            this->SBC(mmu, this->a, mmu[this->hl]);
+            this->SBC(mmu, this->a, mmu.read(this->hl));
         } break;
 
         case 0xAE: {
-            this->XOR(mmu, this->a, mmu[this->hl]);
+            this->XOR(mmu, this->a, mmu.read(this->hl));
         } break;
 
         case 0xBE: {
-            this->CP(mmu, this->a, mmu[this->hl]);
+            this->CP(mmu, this->a, mmu.read(this->hl));
         } break;
 
         case 0x8F: {
@@ -884,13 +884,13 @@ namespace gbmu
         case 0xE0: {
             auto a8 = this->_read_byte(mmu);
 
-            this->LD(mmu, mmu[0xFF00 + a8], this->a);
+            this->LD(mmu, 0xFF00 + a8, this->a);
         } break;
 
         case 0xF0: {
             auto a8 = this->_read_byte(mmu);
 
-            this->LD(mmu, this->a, mmu[0xFF00 + a8]);
+            this->LD(mmu, this->a, mmu.read(0xFF00 + a8));
         } break;
 
         case 0xC1: {
@@ -918,11 +918,11 @@ namespace gbmu
         } break;
 
         case 0xE2: {
-            this->LD(mmu, mmu[0xFF00 + this->c], this->a);
+            this->LD(mmu, 0xFF00 + this->c, this->a);
         } break;
 
         case 0xF2: {
-            this->LD(mmu, this->a, mmu[0xFF00 + this->c]);
+            this->LD(mmu, this->a, mmu.read(0xFF00 + this->c));
         } break;
 
         case 0xC3: {
@@ -1050,13 +1050,13 @@ namespace gbmu
         case 0xEA: {
             auto a16 = this->_read_word(mmu);
 
-            this->LD(mmu, mmu[a16], this->a);
+            this->LD(mmu, a16, this->a);
         } break;
 
         case 0xFA: {
             auto a16 = this->_read_word(mmu);
 
-            this->LD(mmu, this->a, mmu[a16]);
+            this->LD(mmu, this->a, a16);
         } break;
 
         case 0xCB: {
@@ -1173,7 +1173,7 @@ namespace gbmu
         } break;
 
         case 0x06: {
-            this->RLC(mmu, mmu[this->hl]);
+            this->RLC(mmu, this->hl, true);
         } break;
 
         case 0x07: {
@@ -1205,7 +1205,7 @@ namespace gbmu
         } break;
 
         case 0x0E: {
-            this->RRC(mmu, mmu[this->hl]);
+            this->RRC(mmu, this->hl, true);
         } break;
 
         case 0x0F: {
@@ -1237,7 +1237,7 @@ namespace gbmu
         } break;
 
         case 0x16: {
-            this->RL(mmu, mmu[this->hl]);
+            this->RL(mmu, this->hl, true);
         } break;
 
         case 0x17: {
@@ -1269,7 +1269,7 @@ namespace gbmu
         } break;
 
         case 0x1E: {
-            this->RR(mmu, mmu[this->hl]);
+            this->RR(mmu, this->hl, true);
         } break;
 
         case 0x1F: {
@@ -1301,7 +1301,7 @@ namespace gbmu
         } break;
 
         case 0x26: {
-            this->SLA(mmu, mmu[this->hl]);
+            this->SLA(mmu, this->hl, true);
         } break;
 
         case 0x27: {
@@ -1333,7 +1333,7 @@ namespace gbmu
         } break;
 
         case 0x2E: {
-            this->SRA(mmu, mmu[this->hl]);
+            this->SRA(mmu, this->hl, true);
         } break;
 
         case 0x2F: {
@@ -1365,7 +1365,7 @@ namespace gbmu
         } break;
 
         case 0x36: {
-            this->SWAP(mmu, mmu[this->hl]);
+            this->SWAP(mmu, this->hl, true);
         } break;
 
         case 0x37: {
@@ -1397,7 +1397,7 @@ namespace gbmu
         } break;
 
         case 0x3E: {
-            this->SRL(mmu, mmu[this->hl]);
+            this->SRL(mmu, this->hl, true);
         } break;
 
         case 0x3F: {
@@ -1429,7 +1429,7 @@ namespace gbmu
         } break;
 
         case 0x46: {
-            this->BIT(mmu, 0, mmu[this->hl]);
+            this->BIT(mmu, 0, this->hl, true);
         } break;
 
         case 0x47: {
@@ -1461,7 +1461,7 @@ namespace gbmu
         } break;
 
         case 0x4E: {
-            this->BIT(mmu, 1, mmu[this->hl]);
+            this->BIT(mmu, 1, this->hl, true);
         } break;
 
         case 0x4F: {
@@ -1493,7 +1493,7 @@ namespace gbmu
         } break;
 
         case 0x56: {
-            this->BIT(mmu, 2, mmu[this->hl]);
+            this->BIT(mmu, 2, this->hl, true);
         } break;
 
         case 0x57: {
@@ -1525,7 +1525,7 @@ namespace gbmu
         } break;
 
         case 0x5E: {
-            this->BIT(mmu, 3, mmu[this->hl]);
+            this->BIT(mmu, 3, this->hl, true);
         } break;
 
         case 0x5F: {
@@ -1557,7 +1557,7 @@ namespace gbmu
         } break;
 
         case 0x66: {
-            this->BIT(mmu, 4, mmu[this->hl]);
+            this->BIT(mmu, 4, this->hl, true);
         } break;
 
         case 0x67: {
@@ -1589,7 +1589,7 @@ namespace gbmu
         } break;
 
         case 0x6E: {
-            this->BIT(mmu, 5, mmu[this->hl]);
+            this->BIT(mmu, 5, this->hl, true);
         } break;
 
         case 0x6F: {
@@ -1621,7 +1621,7 @@ namespace gbmu
         } break;
 
         case 0x76: {
-            this->BIT(mmu, 6, mmu[this->hl]);
+            this->BIT(mmu, 6, this->hl, true);
         } break;
 
         case 0x77: {
@@ -1653,7 +1653,7 @@ namespace gbmu
         } break;
 
         case 0x7E: {
-            this->BIT(mmu, 7, mmu[this->hl]);
+            this->BIT(mmu, 7, this->hl, true);
         } break;
 
         case 0x7F: {
@@ -1685,7 +1685,7 @@ namespace gbmu
         } break;
 
         case 0x86: {
-            this->RES(mmu, 0, mmu[this->hl]);
+            this->RES(mmu, 0, this->hl, true);
         } break;
 
         case 0x87: {
@@ -1717,7 +1717,7 @@ namespace gbmu
         } break;
 
         case 0x8E: {
-            this->RES(mmu, 1, mmu[this->hl]);
+            this->RES(mmu, 1, this->hl, true);
         } break;
 
         case 0x8F: {
@@ -1749,7 +1749,7 @@ namespace gbmu
         } break;
 
         case 0x96: {
-            this->RES(mmu, 2, mmu[this->hl]);
+            this->RES(mmu, 2, this->hl, true);
         } break;
 
         case 0x97: {
@@ -1781,7 +1781,7 @@ namespace gbmu
         } break;
 
         case 0x9E: {
-            this->RES(mmu, 3, mmu[this->hl]);
+            this->RES(mmu, 3, this->hl, true);
         } break;
 
         case 0x9F: {
@@ -1813,7 +1813,7 @@ namespace gbmu
         } break;
 
         case 0xA6: {
-            this->RES(mmu, 4, mmu[this->hl]);
+            this->RES(mmu, 4, this->hl, true);
         } break;
 
         case 0xA7: {
@@ -1845,7 +1845,7 @@ namespace gbmu
         } break;
 
         case 0xAE: {
-            this->RES(mmu, 5, mmu[this->hl]);
+            this->RES(mmu, 5, this->hl, true);
         } break;
 
         case 0xAF: {
@@ -1877,7 +1877,7 @@ namespace gbmu
         } break;
 
         case 0xB6: {
-            this->RES(mmu, 6, mmu[this->hl]);
+            this->RES(mmu, 6, this->hl, true);
         } break;
 
         case 0xB7: {
@@ -1909,7 +1909,7 @@ namespace gbmu
         } break;
 
         case 0xBE: {
-            this->RES(mmu, 7, mmu[this->hl]);
+            this->RES(mmu, 7, this->hl, true);
         } break;
 
         case 0xBF: {
@@ -1941,7 +1941,7 @@ namespace gbmu
         } break;
 
         case 0xC6: {
-            this->SET(mmu, 0, mmu[this->hl]);
+            this->SET(mmu, 0, this->hl, true);
         } break;
 
         case 0xC7: {
@@ -1973,7 +1973,7 @@ namespace gbmu
         } break;
 
         case 0xCE: {
-            this->SET(mmu, 1, mmu[this->hl]);
+            this->SET(mmu, 1, this->hl, true);
         } break;
 
         case 0xCF: {
@@ -2005,7 +2005,7 @@ namespace gbmu
         } break;
 
         case 0xD6: {
-            this->SET(mmu, 2, mmu[this->hl]);
+            this->SET(mmu, 2, this->hl, true);
         } break;
 
         case 0xD7: {
@@ -2037,7 +2037,7 @@ namespace gbmu
         } break;
 
         case 0xDE: {
-            this->SET(mmu, 3, mmu[this->hl]);
+            this->SET(mmu, 3, this->hl, true);
         } break;
 
         case 0xDF: {
@@ -2069,7 +2069,7 @@ namespace gbmu
         } break;
 
         case 0xE6: {
-            this->SET(mmu, 4, mmu[this->hl]);
+            this->SET(mmu, 4, this->hl, true);
         } break;
 
         case 0xE7: {
@@ -2101,7 +2101,7 @@ namespace gbmu
         } break;
 
         case 0xEE: {
-            this->SET(mmu, 5, mmu[this->hl]);
+            this->SET(mmu, 5, this->hl, true);
         } break;
 
         case 0xEF: {
@@ -2133,7 +2133,7 @@ namespace gbmu
         } break;
 
         case 0xF6: {
-            this->SET(mmu, 6, mmu[this->hl]);
+            this->SET(mmu, 6, this->hl, true);
         } break;
 
         case 0xF7: {
@@ -2165,7 +2165,7 @@ namespace gbmu
         } break;
 
         case 0xFE: {
-            this->SET(mmu, 7, mmu[this->hl]);
+            this->SET(mmu, 7, this->hl, true);
         } break;
 
         case 0xFF: {
@@ -2206,18 +2206,18 @@ namespace gbmu
         hi_lo pair(value);
 
         this->sp -= 1;
-        mmu[this->sp] = pair.hi;
+        mmu.write(this->sp, pair.hi);
         this->sp -= 1;
-        mmu[this->sp] = pair.lo;
+        mmu.write(this->sp, pair.lo);
     }
 
     std::uint16_t cpu::_pop(mmu &mmu)
     {
-        auto lo = mmu[this->sp];
+        auto lo = mmu.read(this->sp--);
 
         this->sp -= 1;
 
-        auto hi = mmu[this->sp];
+        auto hi = mmu.read(this->sp);
 
         this->sp -= 1;
 
@@ -2252,7 +2252,7 @@ namespace gbmu
 
     void cpu::LD(mmu &mmu, std::uint16_t out_reg, std::uint8_t in_reg)
     {
-        mmu[out_reg] = in_reg;
+        mmu.write(out_reg, in_reg);
     }
 
     void cpu::INC(mmu &, std::uint16_t &reg)
@@ -2334,7 +2334,7 @@ namespace gbmu
 
     void cpu::LD(mmu &mmu, std::uint8_t &reg_out, std::uint16_t reg_in)
     {
-        auto val = mmu[reg_in];
+        auto val = mmu.read(reg_in);
 
         reg_out = val;
     }
@@ -2493,7 +2493,8 @@ namespace gbmu
 
     void cpu::DI(mmu &mmu)
     {
-        mmu[0xFFFF] = 0x00; // TODO delay IME = 0 by one instruction
+        mmu.write(0xFFFF, 0x00); // TODO delay IME = 0 by one instruction
+        // mmu[0xFFFF] = 0x00;
     }
 
     void cpu::CALL(mmu &mmu, bool condition)
@@ -2570,7 +2571,8 @@ namespace gbmu
 
     void cpu::EI(mmu &mmu)
     {
-        mmu[0xFFFF] = 0x01; // TODO delay IME = 1 by one instruction
+        mmu.write(0xFFFF, 0x01); // TODO delay IME = 1 by one instruction
+        // mmu[0xFFFF] = 0x01;
     }
 
     void cpu::ADC(mmu &mmu, std::uint8_t& reg_out)
@@ -2701,5 +2703,74 @@ namespace gbmu
     void cpu::SET(mmu &, std::uint8_t bit, std::uint8_t& reg_out)
     {
         reg_out |= (1 << bit);
+    }
+
+    void cpu::INC(mmu& mmu, std::uint16_t address, bool)
+    {
+        auto n = mmu.read(address);
+
+        this->INC(mmu, n);
+
+        mmu.write(address, n);
+    }
+
+    void cpu::DEC(mmu& mmu, std::uint16_t address, bool)
+    {
+        auto n = mmu.read(address);
+
+        this->DEC(mmu, n);
+
+        mmu.write(address, n);
+    }
+
+    void cpu::LD(mmu& mmu, std::uint16_t address, bool)
+    {
+        auto n = this->_read_byte(mmu);
+
+        mmu.write(address, n);
+    }
+
+    void cpu::RLC(mmu &mmu, std::uint16_t address, bool)
+    {
+    }
+
+    void cpu::RRC(mmu &mmu, std::uint16_t address, bool)
+    {
+    }
+
+    void cpu::RL(mmu &mmu, std::uint16_t address, bool)
+    {
+    }
+
+    void cpu::RR(mmu &mmu, std::uint16_t address, bool)
+    {
+    }
+
+    void cpu::SLA(mmu &mmu, std::uint16_t address, bool)
+    {
+    }
+
+    void cpu::SRA(mmu &mmu, std::uint16_t address, bool)
+    {
+    }
+
+    void cpu::SWAP(mmu &mmu, std::uint16_t address, bool)
+    {
+    }
+
+    void cpu::SRL(mmu &mmu, std::uint16_t address, bool)
+    {
+    }
+
+    void cpu::BIT(mmu &mmu, std::uint8_t bit, std::uint16_t address, bool)
+    {
+    }
+
+    void cpu::RES(mmu &mmu, std::uint8_t bit, std::uint16_t address, bool)
+    {
+    }
+
+    void cpu::SET(mmu &mmu, std::uint8_t bit, std::uint16_t address, bool)
+    {
     }
 }

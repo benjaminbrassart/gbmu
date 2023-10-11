@@ -5,6 +5,18 @@ Its goal is to create a GameBoy and GameBoy Color emulator in the language of ou
 
 This one is written in C++20.
 
+## Resources
+
+### Manual
+- [`GameBoyProgManVer1.1.pdf`](https://ia903208.us.archive.org/9/items/GameBoyProgManVer1.1/GameBoyProgManVer1.1.pdf) &mdash; Official Game Boy programming manual by Nintendo
+- [`GBCPUman.pdf`](http://marc.rawer.de/Gameboy/Docs/GBCPUman.pdf) &mdash; Unofficial manual, easy to read and understand
+- [`1996_Sharp_Microcomputer_Data_Book.pdf`](http://www.bitsavers.org/components/sharp/_dataBooks/1996_Sharp_Microcomputer_Data_Book.pdf) &mdash; SHARP SM83 CPU technical specifications
+
+### Websites
+- https://gbdev.io/gb-opcodes/optables/dark &mdash; SM83 opcodes
+- https://gbdev.io/ &mdash; Tons of resources and guides
+- https://gbdev.gg8.se/ &mdash; Another great resource provider
+
 ## Cartridge
 
 ### Memory layout
