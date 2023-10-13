@@ -3,4 +3,5 @@
 *.gbc
 *.gb
 *.header
+*.rominfo
 /roms.zip
