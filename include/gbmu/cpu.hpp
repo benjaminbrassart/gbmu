@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/07 11:22:32 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/13 18:06:05 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/13 18:40:50 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,14 @@ namespace gbmu
 {
     class mmu;
 
+    enum class cpu_flag
+    {
+        z = 1 << 7,
+        n = 1 << 6,
+        h = 1 << 5,
+        c = 1 << 4,
+    };
+
     class cpu
     {
     public:
@@ -27,25 +35,8 @@ namespace gbmu
             struct {
                 /** AF high byte */
                 std::uint8_t a;
-                union {
                 /** AF low byte */
-                    std::uint8_t f;
-                    /** Flags */
-                    struct {
-                    public:
-                        private:
-                            std::uint8_t: 4;
-                        public:
-                        /** carry flag */
-                        bool c: 1;
-                        /** half-carry flag */
-                        bool h: 1;
-                        /** subtract flag */
-                        bool n: 1;
-                        /** zero flag */
-                        bool z: 1;
-                    } flags;
-                };
+                std::uint8_t f;
             };
         };
         union {
@@ -128,6 +119,10 @@ namespace gbmu
         void _handle_instruction_prefix(mmu &mmu, std::uint8_t code);
 
     private:
+        bool _getflag(cpu_flag flag);
+
+        void _setflag(cpu_flag flag, bool value);
+
         /**
          * Set program counter to absolute address
          */
@@ -238,5 +233,8 @@ namespace gbmu
         void BIT(mmu &mmu, std::uint8_t bit, std::uint16_t address, bool);
         void RES(mmu &mmu, std::uint8_t bit, std::uint16_t address, bool);
         void SET(mmu &mmu, std::uint8_t bit, std::uint16_t address, bool);
+
+    public:
+        friend class debugger;
     };
 }

@@ -6,7 +6,7 @@
 #    By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/10/07 11:07:29 by bbrassar          #+#    #+#              #
-#    Updated: 2023/10/13 15:23:03 by bbrassar         ###   ########.fr        #
+#    Updated: 2023/10/13 19:44:26 by bbrassar         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -35,6 +35,7 @@ SRC += format.cpp
 SRC += exception.cpp
 SRC += cpu.cpp
 SRC += cartridge.cpp
+SRC += io_registers.cpp
 SRC += debugger.cpp
 OBJ := $(SRC:%=$(DIR_OBJ)/%.o)
 DEP := $(OBJ:.o=.d)

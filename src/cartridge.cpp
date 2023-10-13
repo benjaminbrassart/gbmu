@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/11 14:37:00 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/13 16:22:46 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/13 23:04:47 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 #include "dbg.hpp"
 #include "features.hpp"
+#include "format.hpp"
 
 #include <algorithm>
 
@@ -93,8 +94,8 @@ namespace gbmu
             ram_size = it->second;
         }
 
-        auto rom = new std::uint8_t[rom_size];
-        auto ram = new std::uint8_t[ram_size];
+        auto rom = new std::uint8_t[rom_size]();
+        auto ram = new std::uint8_t[ram_size]();
 
         cartridge *cart;
 
@@ -142,11 +143,13 @@ namespace gbmu
 
         if (cart != nullptr)
         {
-            auto rom_body = reinterpret_cast<char*>(&rom[INT_VECTORS_SIZE + CARTRIDGE_HEADER_SIZE]);
-            auto body_size = rom_size - (INT_VECTORS_SIZE + CARTRIDGE_HEADER_SIZE);
+            f.seekg(std::istream::beg);
+            f.read(reinterpret_cast<char*>(rom), rom_size);
 
-            std::copy(std::begin(raw_header), std::end(raw_header), rom);
-            f.read(rom_body, body_size);
+            // for (auto i = 0; i < 336; i += 1)
+            // {
+            //     std::cout << i << ": " << hex(rom[i]) << " (" << hex(cart->rom[i]) << ")" << std::endl;
+            // }
 
             if (!f.fail())
             {
@@ -239,12 +242,12 @@ namespace gbmu
         /* 0000-3FFF - ROM bank 00 */
         /**/ if (address >= 0x0000 && address <= 0x3FFF)
         {
-            return this->cartridge::rom[address];
+            return this->rom[address];
         }
         /* 4000-7FFF - ROM bank 01~NN */
         else if (address >= 0x4000 && address <= 0x7FFF)
         {
-            return this->cartridge::rom[(this->rom_bank * 0x4000) + (address - 0x4000)];
+            return this->rom[(this->rom_bank * 0x4000) + (address - 0x4000)];
         }
         else if (address >= 0xA000 && address <= 0xBFFF)
         {
@@ -300,28 +303,70 @@ namespace gbmu
 
     std::uint8_t mbc2::_read_impl(std::uint16_t) const
     {
-        return 0x00;
+        TODO("read: MBC2");
     }
 
     void mbc2::_write_impl(std::uint16_t, std::uint8_t)
     {
+        TODO("write: MBC2");
     }
 
     std::uint8_t mbc3::_read_impl(std::uint16_t) const
     {
-        return 0x00;
+        TODO("read: MBC3");
     }
 
     void mbc3::_write_impl(std::uint16_t, std::uint8_t)
     {
+        TODO("write: MBC3");
     }
 
-    std::uint8_t mbc5::_read_impl(std::uint16_t) const
+    std::uint8_t mbc5::_read_impl(std::uint16_t address) const
     {
-        return 0x00;
+        /* 0000-3FFF - ROM bank 00 */
+        /**/ if (address >= 0x0000 && address <= 0x3FFF)
+        {
+            return this->rom[address];
+        }
+        /* 4000-7FFF - ROM bank 00-1FF */
+        else if (address >= 0x4000 && address <= 0x7FFF)
+        {
+            return this->rom[(this->rom_bank * 0x4000) + (address - 0x4000)];
+        }
+        /* A000-BFFF - RAM bank 00-0F */
+        else if (address >= 0xA000 && address <= 0xBFFF)
+        {
+            return this->ram[(this->ram_bank * 0x2000) + (address - 0x2000)];
+        }
+        else
+        {
+            throw_located(memory_index_exception(address));
+        }
     }
 
-    void mbc5::_write_impl(std::uint16_t, std::uint8_t)
+    void mbc5::_write_impl(std::uint16_t address, std::uint8_t value)
     {
+        /* 0000-1FFF - RAM enable */
+        /**/ if (address >= 0x0000 && address <= 0x1FFF)
+        {
+            this->ram_enabled = ((value & 0x0F) == 0x0A);
+        }
+        /* 2000-2FFF = 8 least significant bits of ROM bank number */
+        else if (address >= 0x2000 && address <= 0x2FFF)
+        {
+            this->rom_bank = (this->rom_bank & (1 << 8)) | value;
+        }
+        else if (address >= 0x3000 && address <= 0x3FFF)
+        {
+            this->rom_bank = (this->rom_bank & (1 << 9)) | (static_cast<int>(value) << 8);
+        }
+        else if (address >= 0x4000 && address <= 0x5FFF)
+        {
+            this->ram_bank = value;
+        }
+        else
+        {
+            throw_located(memory_index_exception(address));
+        }
     }
 }

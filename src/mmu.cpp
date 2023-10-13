@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/07 11:44:58 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/13 18:00:33 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/13 23:04:40 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,11 +22,12 @@ namespace gbmu
 {
     mmu::mmu(cartridge &cart) :
         cart(cart),
+        io_regs(),
         interrupt_master(false),
         interrupt_mask(0b00011111),
         interrupt_flag(0b00011111),
-        wram(new std::uint8_t[WRAM_SIZE]),
-        hram(new std::uint8_t[HRAM_SIZE])
+        wram(new std::uint8_t[WRAM_SIZE]()),
+        hram(new std::uint8_t[HRAM_SIZE]())
     {
     }
 
@@ -42,16 +43,35 @@ namespace gbmu
         {
             return this->cart.read(address);
         }
-        else if (address == 0xFF0F)
+        /* A000-BFFF - Cartridge RAM */
+        else if (address >= 0xA000 && address <= 0xBFFF)
         {
-            return this->interrupt_flag;
+            return this->cart.read(address);
         }
+        /* C000-DFFF - Working RAM */
+        else if (address >= 0xC000 && address <= 0xDFFF)
+        {
+            return this->wram[address - 0xC000];
+        }
+        /* FF00-FF7F - I/O registers */
+        else if (address >= 0xFF00 && address <= 0xFF7F)
+        {
+            return this->io_regs.read(address);
+        }
+        /* FF80-FFFE - High RAM */
+        else if (address >= 0xFF80 && address <= 0xFFFE)
+        {
+            return this->hram[address - 0xFF80];
+        }
+        /* FFFF - Interrupt enable register */
         else if (address == 0xFFFF)
         {
             return this->interrupt_mask;
         }
-
-        throw_located(memory_index_exception(address));
+        else
+        {
+            throw_located(memory_index_exception(address));
+        }
     }
 
     void mmu::_write_impl(std::uint16_t address, std::uint8_t value)
@@ -60,7 +80,7 @@ namespace gbmu
         /* 4000-7FFF - Cartridge ROM bank N */
         /**/ if (address >= 0x0000 && address <= 0x7FFF)
         {
-            return this->cart.write(address, value);
+            this->cart.write(address, value);
         }
         /* 8000-97FF - Tile RAM */
         else if (address >= 0x8000 && address <= 0x97FF)
@@ -81,7 +101,6 @@ namespace gbmu
         else if (address >= 0xC000 && address <= 0xDFFF)
         {
             this->wram[address - 0xC000] = address;
-            return;
         }
         /* E000-FDFF - Echo RAM */
         else if (address >= 0xE000 && address <= 0xFDFF)
@@ -101,20 +120,21 @@ namespace gbmu
         /* FF00-FF7F - I/O registers */
         else if (address >= 0xFF00 && address <= 0xFF7F)
         {
-            TODO("write: I/O Registers");
+            this->io_regs.write(address, value);
         }
         /* FF80-FFFE - High RAM */
         else if (address >= 0xFF80 && address <= 0xFFFE)
         {
             this->hram[address - 0xFF80] = value;
-            return;
         }
         /* FFFF - Interrupt enable register */
         else if (address == 0xFFFF)
         {
-            TODO("write: IEM");
+            this->interrupt_mask = value & 0b00011111;
         }
-
-        throw_located(memory_index_exception(address));
+        else
+        {
+            throw_located(memory_index_exception(address));
+        }
     }
 }

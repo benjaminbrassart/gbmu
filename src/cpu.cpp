@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/07 11:27:35 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/13 16:33:31 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/13 22:46:26 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,11 +107,11 @@ namespace gbmu
         } break;
 
         case 0x20: {
-            this->JR(mmu, !this->flags.z);
+            this->JR(mmu, !this->_getflag(cpu_flag::z));
         } break;
 
         case 0x30: {
-            this->JR(mmu, !this->flags.c);
+            this->JR(mmu, !this->_getflag(cpu_flag::c));
         } break;
 
         case 0x01: {
@@ -243,11 +243,11 @@ namespace gbmu
         } break;
 
         case 0x28: {
-            this->JR(mmu, this->flags.z);
+            this->JR(mmu, this->_getflag(cpu_flag::z));
         } break;
 
         case 0x38: {
-            this->JR(mmu, this->flags.c);
+            this->JR(mmu, this->_getflag(cpu_flag::c));
         } break;
 
         case 0x09: {
@@ -877,11 +877,11 @@ namespace gbmu
         } break;
 
         case 0xC0: {
-            this->RET(mmu, !this->flags.z);
+            this->RET(mmu, !this->_getflag(cpu_flag::z));
         } break;
 
         case 0xD0: {
-            this->RET(mmu, !this->flags.c);
+            this->RET(mmu, !this->_getflag(cpu_flag::c));
         } break;
 
         case 0xE0: {
@@ -913,11 +913,11 @@ namespace gbmu
         } break;
 
         case 0xC2: {
-            this->JP(mmu, !this->flags.z);
+            this->JP(mmu, !this->_getflag(cpu_flag::z));
         } break;
 
         case 0xD2: {
-            this->JP(mmu, !this->flags.c);
+            this->JP(mmu, !this->_getflag(cpu_flag::c));
         } break;
 
         case 0xE2: {
@@ -945,11 +945,11 @@ namespace gbmu
         } break;
 
         case 0xC4: {
-            this->CALL(mmu, !this->flags.z);
+            this->CALL(mmu, !this->_getflag(cpu_flag::z));
         } break;
 
         case 0xD4: {
-            this->CALL(mmu, !this->flags.c);
+            this->CALL(mmu, !this->_getflag(cpu_flag::c));
         } break;
 
         case 0xE4: {
@@ -1009,11 +1009,11 @@ namespace gbmu
         } break;
 
         case 0xC8: {
-            this->RET(mmu, this->flags.z);
+            this->RET(mmu, this->_getflag(cpu_flag::z));
         } break;
 
         case 0xD8: {
-            this->RET(mmu, this->flags.z);
+            this->RET(mmu, this->_getflag(cpu_flag::c));
         } break;
 
         case 0xE8: {
@@ -1043,11 +1043,11 @@ namespace gbmu
         } break;
 
         case 0xCA: {
-            this->JP(mmu, this->flags.z);
+            this->JP(mmu, this->_getflag(cpu_flag::z));
         } break;
 
         case 0xDA: {
-            this->JP(mmu, this->flags.c);
+            this->JP(mmu, this->_getflag(cpu_flag::c));
         } break;
 
         case 0xEA: {
@@ -1079,11 +1079,11 @@ namespace gbmu
         } break;
 
         case 0xCC: {
-            this->CALL(mmu, this->flags.z);
+            this->CALL(mmu, this->_getflag(cpu_flag::z));
         } break;
 
         case 0xDC: {
-            this->CALL(mmu, this->flags.c);
+            this->CALL(mmu, this->_getflag(cpu_flag::c));
         } break;
 
         case 0xEC: {
@@ -2177,6 +2177,23 @@ namespace gbmu
         }
     }
 
+    bool cpu::_getflag(cpu_flag flag)
+    {
+        return (this->f & static_cast<std::uint8_t>(flag)) == static_cast<std::uint8_t>(flag);
+    }
+
+    void cpu::_setflag(cpu_flag flag, bool value)
+    {
+        if (value)
+        {
+            this->f |= static_cast<std::uint8_t>(flag);
+        }
+        else
+        {
+            this->f &= ~(static_cast<std::uint8_t>(flag));
+        }
+    }
+
     void cpu::_jump(std::uint16_t address)
     {
         this->pc = address;
@@ -2269,18 +2286,18 @@ namespace gbmu
 
         reg += 1;
 
-        this->flags.z = (reg == 0);
-        this->flags.n = false;
-        this->flags.h = ((orig & 0x0F) + 1) > 0x0F;
+        this->_setflag(cpu_flag::z, reg == 0);
+        this->_setflag(cpu_flag::n, false);
+        this->_setflag(cpu_flag::h, ((orig & 0x0F) + 1) > 0x0F);
     }
 
     void cpu::DEC(mmu &, std::uint8_t &reg)
     {
         reg -= 1;
 
-        this->flags.z = (reg == 0);
-        this->flags.n = true;
-        // this->flags.h = true; // TODO
+        this->_setflag(cpu_flag::z, (reg == 0));
+        this->_setflag(cpu_flag::n, true);
+        // this->_setflag(cpu_flag::h, true); // TODO
     }
 
     void cpu::LD(mmu& mmu, std::uint8_t &reg)
@@ -2294,45 +2311,45 @@ namespace gbmu
     {
         // TODO
 
-        this->flags.z = false;
-        this->flags.n = false;
-        this->flags.h = false;
-        // this->flags.c = false; // TODO
+        this->_setflag(cpu_flag::z, false);
+        this->_setflag(cpu_flag::n, false);
+        this->_setflag(cpu_flag::h, false);
+        // this->_setflag(cpu_flag::c, false); // TODO
     }
 
     void cpu::RLA(mmu &)
     {
         // TODO
 
-        this->flags.z = false;
-        this->flags.n = false;
-        this->flags.h = false;
-        // this->flags.c = false; // TODO
+        this->_setflag(cpu_flag::z, false);
+        this->_setflag(cpu_flag::n, false);
+        this->_setflag(cpu_flag::h, false);
+        // this->_setflag(cpu_flag::c, false); // TODO
     }
 
     void cpu::DAA(mmu &)
     {
         // TODO
 
-        // this->flags.z = false; // TODO
-        this->flags.h = false;
-        // this->flags.c = false; // TODO
+        // this->_setflag(cpu_flag::z, false); // TODO
+        this->_setflag(cpu_flag::h, false);
+        // this->_setflag(cpu_flag::c, false); // TODO
     }
 
     void cpu::SCF(mmu &)
     {
-        this->flags.n = false;
-        this->flags.h = false;
-        this->flags.c = true;
+        this->_setflag(cpu_flag::n, false);
+        this->_setflag(cpu_flag::h, false);
+        this->_setflag(cpu_flag::c, true);
     }
 
     void cpu::ADD(mmu &, std::uint16_t &reg_out, std::uint16_t reg_in)
     {
         reg_out += reg_in;
 
-        this->flags.n = false;
-        // this->flags.h = false; // TODO
-        // this->flags.c = false; // TODO
+        this->_setflag(cpu_flag::n, false);
+        // this->_setflag(cpu_flag::h, false); // TODO
+        // this->_setflag(cpu_flag::c, false); // TODO
     }
 
     void cpu::LD(mmu &mmu, std::uint8_t &reg_out, std::uint16_t reg_in)
@@ -2353,10 +2370,10 @@ namespace gbmu
 
         this->a = (this->a >> 1) | ((orig & (1 << 0)) << 7);
 
-        this->flags.z = false;
-        this->flags.n = false;
-        this->flags.h = false;
-        this->flags.c = (orig & (1 << 0)) != 0;
+        this->_setflag(cpu_flag::z, false);
+        this->_setflag(cpu_flag::n, false);
+        this->_setflag(cpu_flag::h, false);
+        this->_setflag(cpu_flag::c, (orig & (1 << 0)) != 0);
     }
 
     void cpu::RRA(mmu &)
@@ -2365,25 +2382,25 @@ namespace gbmu
 
         this->a >>= 1;
 
-        this->flags.z = false;
-        this->flags.n = false;
-        this->flags.h = false;
-        this->flags.c = (orig & (1 << 0)) != 0;
+        this->_setflag(cpu_flag::z, false);
+        this->_setflag(cpu_flag::n, false);
+        this->_setflag(cpu_flag::h, false);
+        this->_setflag(cpu_flag::c, (orig & (1 << 0)) != 0);
     }
 
     void cpu::CPL(mmu &)
     {
         this->a = ~this->a;
 
-        this->flags.n = true;
-        this->flags.h = true;
+        this->_setflag(cpu_flag::n, true);
+        this->_setflag(cpu_flag::h, true);
     }
 
     void cpu::CCF(mmu &)
     {
-        this->flags.n = false;
-        this->flags.h = false;
-        this->flags.c = !this->flags.c;
+        this->_setflag(cpu_flag::n, false);
+        this->_setflag(cpu_flag::h, false);
+        this->_setflag(cpu_flag::c, !this->_getflag(cpu_flag::c));
     }
 
     void cpu::LD(mmu &, std::uint8_t &reg_out, std::uint8_t reg_in)
@@ -2400,70 +2417,70 @@ namespace gbmu
     {
         reg_out += reg_in;
 
-        this->flags.z = (reg_out == 0);
-        this->flags.n = false;
-        // this->flags.h = false; // TODO
-        // this->flags.c = false; // TODO
+        this->_setflag(cpu_flag::z, (reg_out == 0));
+        this->_setflag(cpu_flag::n, false);
+        // this->_setflag(cpu_flag::h, false); // TODO
+        // this->_setflag(cpu_flag::c, false); // TODO
     }
 
     void cpu::SUB(mmu &, std::uint8_t& reg_out, std::uint8_t reg_in)
     {
         reg_out -= reg_in;
 
-        this->flags.z = (reg_out == 0);
-        this->flags.n = true;
-        // this->flags.h = false; // TODO
-        // this->flags.c = false; // TODO
+        this->_setflag(cpu_flag::z, (reg_out == 0));
+        this->_setflag(cpu_flag::n, true);
+        // this->_setflag(cpu_flag::h, false); // TODO
+        // this->_setflag(cpu_flag::c, false); // TODO
     }
 
     void cpu::AND(mmu &, std::uint8_t& reg_out, std::uint8_t reg_in)
     {
         reg_out &= reg_in;
 
-        this->flags.z = (reg_out == 0);
-        this->flags.n = false;
-        this->flags.h = true;
-        this->flags.c = false;
+        this->_setflag(cpu_flag::z, (reg_out == 0));
+        this->_setflag(cpu_flag::n, false);
+        this->_setflag(cpu_flag::h, true);
+        this->_setflag(cpu_flag::c, false);
     }
 
     void cpu::OR(mmu &, std::uint8_t& reg_out, std::uint8_t reg_in)
     {
         reg_out |= reg_in;
 
-        this->flags.z = (reg_out == 0);
-        this->flags.n = false;
-        this->flags.h = false;
-        this->flags.c = false;
+        this->_setflag(cpu_flag::z, (reg_out == 0));
+        this->_setflag(cpu_flag::n, false);
+        this->_setflag(cpu_flag::h, false);
+        this->_setflag(cpu_flag::c, false);
     }
 
     void cpu::ADC(mmu &mmu, std::uint8_t& reg_out, std::uint8_t reg_in)
     {
-        this->ADD(mmu, reg_out, reg_in + (this->flags.c ? 1 : 0));
+        this->ADD(mmu, reg_out, reg_in + (this->_getflag(cpu_flag::c) ? 1 : 0));
     }
 
     void cpu::SBC(mmu &mmu, std::uint8_t& reg_out, std::uint8_t reg_in)
     {
-        this->SUB(mmu, reg_out, reg_in + (this->flags.c ? 1 : 0));
+        this->SUB(mmu, reg_out, reg_in + (this->_getflag(cpu_flag::c) ? 1 : 0));
     }
 
     void cpu::XOR(mmu &, std::uint8_t& reg_out, std::uint8_t reg_in)
     {
         reg_out ^= reg_in;
 
-        this->flags.z = (reg_out == 0);
-        this->flags.n = false;
-        this->flags.h = false;
-        this->flags.c = false;
+        this->_setflag(cpu_flag::z, (reg_out == 0));
+        this->_setflag(cpu_flag::n, false);
+        this->_setflag(cpu_flag::h, false);
+        this->_setflag(cpu_flag::c, false);
     }
 
     void cpu::CP(mmu &, std::uint8_t& reg_out, std::uint8_t reg_in)
     {
         reg_out = ~reg_in;
 
-        this->flags.z = (reg_out == 0);
-        this->flags.n = true;
-        this->flags.h = false; // TODO
-        this->flags.c = false; // TODO
+        this->_setflag(cpu_flag::z, (reg_out == 0));
+        this->_setflag(cpu_flag::n, true);
+        this->_setflag(cpu_flag::h, false); // TODO
+        this->_setflag(cpu_flag::c, false); // TODO
     }
 
     void cpu::RET(mmu &mmu, bool condition)
@@ -2604,10 +2621,10 @@ namespace gbmu
 
         reg_out <<= 1;
 
-        this->flags.z = (reg_out == 0);
-        this->flags.n = false;
-        this->flags.h = false;
-        this->flags.c = (orig & (1 << 7)) != 0;
+        this->_setflag(cpu_flag::z, (reg_out == 0));
+        this->_setflag(cpu_flag::n, false);
+        this->_setflag(cpu_flag::h, false);
+        this->_setflag(cpu_flag::c, (orig & (1 << 7)) != 0);
     }
 
     void cpu::RRC(mmu &, std::uint8_t& reg_out)
@@ -2616,10 +2633,10 @@ namespace gbmu
 
         reg_out >>= 1;
 
-        this->flags.z = (reg_out == 0);
-        this->flags.n = false;
-        this->flags.h = false;
-        this->flags.c = (orig & (1 << 0)) != 0;
+        this->_setflag(cpu_flag::z, (reg_out == 0));
+        this->_setflag(cpu_flag::n, false);
+        this->_setflag(cpu_flag::h, false);
+        this->_setflag(cpu_flag::c, (orig & (1 << 0)) != 0);
     }
 
     void cpu::RL(mmu &, [[maybe_unused]] std::uint8_t& reg_out)
@@ -2644,10 +2661,10 @@ namespace gbmu
         // set bit 0 to 0
         reg_out = (orig << 1) & ~(1 << 0);
 
-        this->flags.z = (reg_out == 0);
-        this->flags.n = false;
-        this->flags.h = false;
-        this->flags.c = (orig & (1 << 7)) != 0;
+        this->_setflag(cpu_flag::z, (reg_out == 0));
+        this->_setflag(cpu_flag::n, false);
+        this->_setflag(cpu_flag::h, false);
+        this->_setflag(cpu_flag::c, (orig & (1 << 7)) != 0);
     }
 
     void cpu::SRA(mmu &, std::uint8_t& reg_out)
@@ -2659,10 +2676,10 @@ namespace gbmu
         // set bit 7 to old bit 7
         reg_out = ((orig & ~(1 << 7)) >> 1) | (orig & (1 << 7));
 
-        this->flags.z = (reg_out == 0);
-        this->flags.n = false;
-        this->flags.h = false;
-        this->flags.c = (orig & (1 << 0)) != 0;
+        this->_setflag(cpu_flag::z, (reg_out == 0));
+        this->_setflag(cpu_flag::n, false);
+        this->_setflag(cpu_flag::h, false);
+        this->_setflag(cpu_flag::c, (orig & (1 << 0)) != 0);
     }
 
     void cpu::SWAP(mmu &, std::uint8_t& reg_out)
@@ -2671,10 +2688,10 @@ namespace gbmu
 
         reg_out = (orig >> 4) | (orig << 4);
 
-        this->flags.z = (reg_out == 0);
-        this->flags.n = false;
-        this->flags.h = false;
-        this->flags.c = false;
+        this->_setflag(cpu_flag::z, (reg_out == 0));
+        this->_setflag(cpu_flag::n, false);
+        this->_setflag(cpu_flag::h, false);
+        this->_setflag(cpu_flag::c, false);
     }
 
     void cpu::SRL(mmu &, std::uint8_t& reg_out)
@@ -2685,17 +2702,17 @@ namespace gbmu
         // set bit 7 to 0
         reg_out = (orig >> 1) & ~(1 << 7);
 
-        this->flags.z = (reg_out == 0);
-        this->flags.n = false;
-        this->flags.h = false;
-        this->flags.c = (orig & (1 << 0)) != 0;
+        this->_setflag(cpu_flag::z, (reg_out == 0));
+        this->_setflag(cpu_flag::n, false);
+        this->_setflag(cpu_flag::h, false);
+        this->_setflag(cpu_flag::c, (orig & (1 << 0)) != 0);
     }
 
     void cpu::BIT(mmu &, std::uint8_t bit, std::uint8_t& reg_out)
     {
-        this->flags.z = (reg_out & (1 << bit)) == 0;
-        this->flags.n = false;
-        this->flags.h = true;
+        this->_setflag(cpu_flag::z, (reg_out & (1 << bit)) == 0);
+        this->_setflag(cpu_flag::n, false);
+        this->_setflag(cpu_flag::h, true);
     }
 
     void cpu::RES(mmu &, std::uint8_t bit, std::uint8_t& reg_out)
