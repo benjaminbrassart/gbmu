@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/08 10:52:48 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/09 14:14:52 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/13 17:39:22 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@ namespace gbmu
         _breakpoints(),
         _pause(false)
     {
+        // this->_breakpoints[0x0293] = 1;
     }
 
     debugger::~debugger() = default;
@@ -42,12 +43,17 @@ namespace gbmu
                 << "Reached breakpoint at address "
                 << hex(pc)
                 << std::endl;
+            this->_pause = true;
+            this->_process_stdin(cpu, mmu);
+            return;
         }
         else if (this->_pause)
         {
             this->_process_stdin(cpu, mmu);
             return;
         }
+
+        std::cout << "STEP " << hex(pc) << ": " << hex(mmu.read(pc)) << std::endl;
 
         try
         {

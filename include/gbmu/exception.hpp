@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 11:57:31 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/11 11:54:52 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/13 17:38:47 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,43 @@
 
 namespace gbmu
 {
+    /**
+     * Exception wrapper that stores the file and line of an exception
+     */
+    class located_exception : public std::exception
+    {
+    public:
+        std::exception *base;
+        std::string file;
+        unsigned int line;
+    private:
+        std::string _message;
+
+    public:
+        located_exception(std::exception const &base, std::string const &file, unsigned int line);
+        virtual ~located_exception();
+
+    public:
+        char const *what() const throw() override;
+    };
+
+#define throw_located(Exception) throw ::gbmu::located_exception(Exception, __FILE__, __LINE__)
+
+    class not_implemented_exception : public std::exception
+    {
+    private:
+        std::string _message;
+
+    public:
+        not_implemented_exception(std::string const &message = "TODO");
+        virtual ~not_implemented_exception();
+
+    public:
+        char const *what() const throw() override;
+    };
+
+#define TODO(...) throw_located(::gbmu::not_implemented_exception(__VA_ARGS__))
+
     /**
      * Thrown when an illegal instruction is executed
      */

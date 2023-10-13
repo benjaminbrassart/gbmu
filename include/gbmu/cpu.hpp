@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/07 11:22:32 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/11 15:45:21 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/13 18:06:05 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,16 +33,17 @@ namespace gbmu
                     /** Flags */
                     struct {
                     public:
-                        /** zero flag */
-                        bool z: 1;
-                        /** subtract flag */
-                        bool n: 1;
-                        /** half-carry flag */
-                        bool h: 1;
+                        private:
+                            std::uint8_t: 4;
+                        public:
                         /** carry flag */
                         bool c: 1;
-                    private:
-                        std::uint8_t: 4;
+                        /** half-carry flag */
+                        bool h: 1;
+                        /** subtract flag */
+                        bool n: 1;
+                        /** zero flag */
+                        bool z: 1;
                     } flags;
                 };
             };

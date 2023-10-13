@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/07 11:14:40 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/09 14:28:10 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/13 11:32:02 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,9 +44,9 @@ int main(int argc, char const *argv[])
         return EXIT_FAILURE;
     }
 
-    gbmu::cartridge cartridge;
+    auto cartridge = gbmu::cartridge::create(f);
 
-    if (!cartridge.open(f))
+    if (cartridge == nullptr)
     {
         std::cerr << "gbmu: " << argv[1] << ": Invalid rom" << std::endl;
         return EXIT_FAILURE;
@@ -54,7 +54,7 @@ int main(int argc, char const *argv[])
 
     gbmu::debugger debugger;
     gbmu::cpu cpu;
-    gbmu::mmu mmu(cartridge);
+    gbmu::mmu mmu(*cartridge);
 
     while (true)
     {

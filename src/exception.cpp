@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 11:59:20 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/11 11:55:54 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/13 17:40:51 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,61 @@
 #include "format.hpp"
 
 #include <sstream>
+
+/* located_exception */
+namespace gbmu
+{
+    static std::string _located_message(std::exception const &base, std::string const &file, unsigned int line)
+    {
+        std::stringstream ss;
+
+        ss << file << ":" << line << ": " << base.what();
+
+        return ss.str();
+    }
+
+    located_exception::located_exception(std::exception const &base, std::string const &file, unsigned int line) :
+        base(new std::exception(base)),
+        file(file),
+        line(line),
+        _message(_located_message(base, file, line))
+    {
+    }
+
+    located_exception::~located_exception()
+    {
+        delete this->base;
+    }
+
+    char const *located_exception::what() const throw()
+    {
+        return this->_message.c_str();
+    }
+}
+
+namespace gbmu
+{
+    static std::string _not_implemented_message(std::string const message)
+    {
+        std::stringstream ss;
+
+        ss << "Not implemented: " << message;
+
+        return ss.str();
+    }
+
+    not_implemented_exception::not_implemented_exception(std::string const &message) :
+        _message(_not_implemented_message(message))
+    {
+    }
+
+    not_implemented_exception::~not_implemented_exception() = default;
+
+    char const *not_implemented_exception::what() const throw()
+    {
+        return this->_message.c_str();
+    }
+}
 
 /* illegal_instruction_exception */
 namespace gbmu

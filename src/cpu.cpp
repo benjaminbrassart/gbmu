@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/07 11:27:35 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/11 15:47:41 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/13 16:33:31 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,12 +25,12 @@ namespace gbmu
         std::uint16_t value;
         struct
         {
-            std::uint8_t hi;
             std::uint8_t lo;
+            std::uint8_t hi;
         };
 
         hi_lo(std::uint16_t val) : value(val) {}
-        hi_lo(std::uint8_t low, std::uint8_t high) : hi(high), lo(low) {}
+        hi_lo(std::uint8_t low, std::uint8_t high) : lo(low), hi(high) {}
     };
 
     cpu::cpu() :
@@ -54,14 +54,17 @@ namespace gbmu
         // handle interrupts
         constexpr static std::uint8_t const IF_MASK = 0x1F;
 
-        int interrupts = IF_MASK & mmu.read(0xFF0F) & mmu.read(0xFFFF);
-
-        for (int i = 0; i < 5; i += 1)
+        if (mmu.interrupt_master)
         {
-            if ((interrupts & (1 << i)) != 0)
+            int interrupts = IF_MASK & mmu.read(0xFF0F) & mmu.read(0xFFFF);
+
+            for (int i = 0; i < 5; i += 1)
             {
-                this->_handle_interrupt(mmu, i);
-                return;
+                if ((interrupts & (1 << i)) != 0)
+                {
+                    this->_handle_interrupt(mmu, i);
+                    return;
+                }
             }
         }
 
@@ -2488,7 +2491,7 @@ namespace gbmu
 
     void cpu::ILLEGAL(mmu &, std::uint8_t code)
     {
-        throw gbmu::illegal_instruction_exception(code);
+        throw_located(illegal_instruction_exception(code));
     }
 
     void cpu::DI(mmu &mmu)
@@ -2730,47 +2733,47 @@ namespace gbmu
         mmu.write(address, n);
     }
 
-    void cpu::RLC(mmu &mmu, std::uint16_t address, bool)
+    void cpu::RLC(mmu &, std::uint16_t, bool)
     {
     }
 
-    void cpu::RRC(mmu &mmu, std::uint16_t address, bool)
+    void cpu::RRC(mmu &, std::uint16_t, bool)
     {
     }
 
-    void cpu::RL(mmu &mmu, std::uint16_t address, bool)
+    void cpu::RL(mmu &, std::uint16_t, bool)
     {
     }
 
-    void cpu::RR(mmu &mmu, std::uint16_t address, bool)
+    void cpu::RR(mmu &, std::uint16_t, bool)
     {
     }
 
-    void cpu::SLA(mmu &mmu, std::uint16_t address, bool)
+    void cpu::SLA(mmu &, std::uint16_t, bool)
     {
     }
 
-    void cpu::SRA(mmu &mmu, std::uint16_t address, bool)
+    void cpu::SRA(mmu &, std::uint16_t, bool)
     {
     }
 
-    void cpu::SWAP(mmu &mmu, std::uint16_t address, bool)
+    void cpu::SWAP(mmu &, std::uint16_t, bool)
     {
     }
 
-    void cpu::SRL(mmu &mmu, std::uint16_t address, bool)
+    void cpu::SRL(mmu &, std::uint16_t, bool)
     {
     }
 
-    void cpu::BIT(mmu &mmu, std::uint8_t bit, std::uint16_t address, bool)
+    void cpu::BIT(mmu &, std::uint8_t, std::uint16_t, bool)
     {
     }
 
-    void cpu::RES(mmu &mmu, std::uint8_t bit, std::uint16_t address, bool)
+    void cpu::RES(mmu &, std::uint8_t, std::uint16_t, bool)
     {
     }
 
-    void cpu::SET(mmu &mmu, std::uint8_t bit, std::uint16_t address, bool)
+    void cpu::SET(mmu &, std::uint8_t, std::uint16_t, bool)
     {
     }
 }
