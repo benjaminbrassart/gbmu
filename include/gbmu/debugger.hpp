@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/08 10:47:30 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/08 11:50:46 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/13 18:47:49 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,7 @@ namespace gbmu
     private:
         std::bitset<1 << 16> _breakpoints;
         bool _pause;
+        bool _step;
 
     public:
         debugger();
@@ -57,5 +58,8 @@ namespace gbmu
     private:
         void _cmd_help(cpu &cpu, mmu &mmu, std::deque<std::string> const &args);
         void _cmd_print(cpu &cpu, mmu &mmu, std::deque<std::string> const &args);
+        void _cmd_continue(cpu &cpu, mmu &mmu, std::deque<std::string> const &args);
+        void _cmd_next(cpu &cpu, mmu &mmu, std::deque<std::string> const &args);
+        void _cmd_break(cpu &cpu, mmu &mmu, std::deque<std::string> const &args);
     };
 }

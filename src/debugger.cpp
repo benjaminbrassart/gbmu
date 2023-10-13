@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/08 10:52:48 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/13 17:39:22 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/13 23:05:19 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,9 +26,10 @@ namespace gbmu
 {
     debugger::debugger() :
         _breakpoints(),
-        _pause(false)
+        _pause(false),
+        _step(false)
     {
-        // this->_breakpoints[0x0293] = 1;
+        // this->_breakpoints[0x30A3] = 1;
     }
 
     debugger::~debugger() = default;
@@ -43,15 +44,20 @@ namespace gbmu
                 << "Reached breakpoint at address "
                 << hex(pc)
                 << std::endl;
+
             this->_pause = true;
-            this->_process_stdin(cpu, mmu);
-            return;
         }
-        else if (this->_pause)
+
+        if (this->_pause)
         {
             this->_process_stdin(cpu, mmu);
-            return;
+            if (!this->_step)
+            {
+                return;
+            }
         }
+
+        this->_step = false;
 
         std::cout << "STEP " << hex(pc) << ": " << hex(mmu.read(pc)) << std::endl;
 
@@ -143,27 +149,80 @@ namespace gbmu
         {
             std::cout
                 << "Registers" << std::endl
-                << "  A  = " << hex(cpu.a) << "        F  = " << hex(cpu.f) << "        AF = " << hex(cpu.af) << std::endl
-                << "  B  = " << hex(cpu.b) << "        C  = " << hex(cpu.c) << "        BC = " << hex(cpu.bc) << "" << std::endl
-                << "  D  = " << hex(cpu.d) << "        E  = " << hex(cpu.e) << "        DE = " << hex(cpu.de) << "" << std::endl
-                << "  H  = " << hex(cpu.h) << "        L  = " << hex(cpu.l) << "        HL = " << hex(cpu.hl) << "" << std::endl
-                << "  SP = " << hex(cpu.sp) << "      PC = " << hex(cpu.pc) << "" << std::endl
+                << "  A  = " << hex(cpu.a)
+                << "        " << "F  = " << hex(cpu.f)
+                << "        " << "AF = " << hex(cpu.af) << std::endl
+                << "  B  = " << hex(cpu.b)
+                << "        " << "C  = " << hex(cpu.c)
+                << "        " << "BC = " << hex(cpu.bc) << "" << std::endl
+                << "  D  = " << hex(cpu.d)
+                << "        " << "E  = " << hex(cpu.e)
+                << "        " << "DE = " << hex(cpu.de) << "" << std::endl
+                << "  H  = " << hex(cpu.h)
+                << "        " << "L  = " << hex(cpu.l)
+                << "        " << "HL = " << hex(cpu.hl) << "" << std::endl
+                << "  SP = " << hex(cpu.sp)
+                << "      " << "PC = " << hex(cpu.pc) << "" << std::endl
                 << std::endl
                 << "Flags" << std::endl
                 << "  Z N H C" << std::endl
-                << "  " << cpu.flags.z << " " << cpu.flags.n << " " << cpu.flags.h << " " << cpu.flags.c << std::endl
+                << "  " << cpu._getflag(cpu_flag::z) << " " << cpu._getflag(cpu_flag::n) << " " << cpu._getflag(cpu_flag::h) << " " << cpu._getflag(cpu_flag::c) << std::endl
             ;
+        }
+    }
+
+    void debugger::_cmd_continue(cpu &, mmu &, std::deque<std::string> const &)
+    {
+        this->_pause = false;
+        this->_step = false;
+    }
+
+    void debugger::_cmd_next(cpu &, mmu &, std::deque<std::string> const &)
+    {
+        this->_step = true;
+    }
+
+    void debugger::_cmd_break(cpu &, mmu &, std::deque<std::string> const &args)
+    {
+        if (args.empty())
+        {
+            if (this->_breakpoints.none())
+            {
+                std::cout << "No breakpoint set." << std::endl;
+                return;
+            }
+                std::cout << "Breakpoints:" << std::endl;
+
+            for (decltype(this->_breakpoints.size()) bit = 0; bit < this->_breakpoints.size(); bit += 1)
+            {
+                if (this->_breakpoints[bit])
+                {
+                    std::cout << "  " << hex(static_cast<std::uint16_t>(bit)) << std::endl;
+                }
+            }
         }
     }
 
     std::unordered_map<std::string, command> const debugger::commands {
         {"help", {
             [](auto &d, auto& cpu, auto &mmu, auto &args) { d._cmd_help(cpu, mmu, args); },
-            "help [command]",
+            "help [<command>]",
         }},
         {"print", {
             [](auto &d, auto& cpu, auto &mmu, auto &args) { d._cmd_print(cpu, mmu, args); },
-            "print [entity]",
+            "print [<entity>]",
+        }},
+        {"continue", {
+            [](auto &d, auto& cpu, auto &mmu, auto &args) { d._cmd_continue(cpu, mmu, args); },
+            "continue",
+        }},
+        {"next", {
+            [](auto &d, auto& cpu, auto &mmu, auto &args) { d._cmd_next(cpu, mmu, args); },
+            "next",
+        }},
+        {"break", {
+            [](auto &d, auto& cpu, auto &mmu, auto &args) { d._cmd_break(cpu, mmu, args); },
+            "break [<address>]",
         }},
     };
 
