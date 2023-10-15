@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/07 11:27:35 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/15 14:54:35 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/15 17:49:25 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,20 +34,30 @@ namespace gbmu
     };
 
     cpu::cpu() :
-        a(0x00),
         f(0x00),
-        b(0x00),
+        a(0x00),
         c(0x00),
-        d(0x00),
+        b(0x00),
         e(0x00),
-        h(0x00),
+        d(0x00),
         l(0x00),
-        pc(0x0100),
-        sp(0xFFFE)
+        h(0x00),
+        pc(0x0000),
+        sp(0x0000)
     {
     }
 
     cpu::~cpu() = default;
+
+    void cpu::boot(mmu &mmu)
+    {
+        while (this->pc < 0x0100)
+        {
+            this->step(mmu);
+        }
+
+        mmu.booting = false;
+    }
 
     void cpu::step(mmu &mmu)
     {
