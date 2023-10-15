@@ -6,7 +6,7 @@
 #    By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/10/07 11:07:29 by bbrassar          #+#    #+#              #
-#    Updated: 2023/10/15 14:46:10 by bbrassar         ###   ########.fr        #
+#    Updated: 2023/10/15 14:52:12 by bbrassar         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -45,7 +45,7 @@ DEP := $(OBJ:.o=.d)
 $(NAME): $(OBJ)
 	$(CXX) $^ -o $@ $(LDLIBS) $(LDFLAGS)
 
-$(OBJ): $(DIR_OBJ)/%.cpp.o: $(DIR_SRC)/%.cpp
+$(OBJ): $(DIR_OBJ)/%.cpp.o: $(DIR_SRC)/%.cpp $(CURRENT_MAKEFILE)
 	@$(MKDIR) $(@D)
 	$(CXX) $(CXXFLAGS) $< -o $@
 
