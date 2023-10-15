@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/07 11:27:35 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/13 22:46:26 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/15 14:54:35 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -2291,11 +2291,11 @@ namespace gbmu
         this->_setflag(cpu_flag::h, ((orig & 0x0F) + 1) > 0x0F);
     }
 
-    void cpu::DEC(mmu &, std::uint8_t &reg)
+        void cpu::DEC(mmu &, std::uint8_t &reg)
     {
-        reg -= 1;
+                reg -= 1;
 
-        this->_setflag(cpu_flag::z, (reg == 0));
+                this->_setflag(cpu_flag::z, (reg == 0));
         this->_setflag(cpu_flag::n, true);
         // this->_setflag(cpu_flag::h, true); // TODO
     }
@@ -2747,50 +2747,107 @@ namespace gbmu
     {
         auto n = this->_read_byte(mmu);
 
+        this->LD(mmu, n);
+
         mmu.write(address, n);
     }
 
-    void cpu::RLC(mmu &, std::uint16_t, bool)
+    void cpu::RLC(mmu &mmu, std::uint16_t address, bool)
     {
+        auto n = mmu.read(address);
+
+        this->RLC(mmu, n);
+
+        mmu.write(address, n);
     }
 
-    void cpu::RRC(mmu &, std::uint16_t, bool)
+    void cpu::RRC(mmu &mmu, std::uint16_t address, bool)
     {
+        auto n = mmu.read(address);
+
+        this->RRC(mmu, n);
+
+        mmu.write(address, n);
     }
 
-    void cpu::RL(mmu &, std::uint16_t, bool)
+    void cpu::RL(mmu &mmu, std::uint16_t address, bool)
     {
+        auto n = mmu.read(address);
+
+        this->RL(mmu, n);
+
+        mmu.write(address, n);
     }
 
-    void cpu::RR(mmu &, std::uint16_t, bool)
+    void cpu::RR(mmu &mmu, std::uint16_t address, bool)
     {
+        auto n = mmu.read(address);
+
+        this->RR(mmu, n);
+
+        mmu.write(address, n);
     }
 
-    void cpu::SLA(mmu &, std::uint16_t, bool)
+    void cpu::SLA(mmu &mmu, std::uint16_t address, bool)
     {
+        auto n = mmu.read(address);
+
+        this->SLA(mmu, n);
+
+        mmu.write(address, n);
     }
 
-    void cpu::SRA(mmu &, std::uint16_t, bool)
+    void cpu::SRA(mmu &mmu, std::uint16_t address, bool)
     {
+        auto n = mmu.read(address);
+
+        this->SRA(mmu, n);
+
+        mmu.write(address, n);
     }
 
-    void cpu::SWAP(mmu &, std::uint16_t, bool)
+    void cpu::SWAP(mmu &mmu, std::uint16_t address, bool)
     {
+        auto n = mmu.read(address);
+
+        this->SWAP(mmu, n);
+
+        mmu.write(address, n);
     }
 
-    void cpu::SRL(mmu &, std::uint16_t, bool)
+    void cpu::SRL(mmu &mmu, std::uint16_t address, bool)
     {
+        auto n = mmu.read(address);
+
+        this->SRL(mmu, n);
+
+        mmu.write(address, n);
     }
 
-    void cpu::BIT(mmu &, std::uint8_t, std::uint16_t, bool)
+    void cpu::BIT(mmu &mmu, std::uint8_t bit, std::uint16_t address, bool)
     {
+        auto n = mmu.read(address);
+
+        this->BIT(mmu, bit, n);
+
+        mmu.write(address, n);
     }
 
-    void cpu::RES(mmu &, std::uint8_t, std::uint16_t, bool)
+    void cpu::RES(mmu &mmu, std::uint8_t bit, std::uint16_t address, bool)
     {
+        auto n = mmu.read(address);
+
+        this->RES(mmu, bit, n);
+
+        mmu.write(address, n);
     }
 
-    void cpu::SET(mmu &, std::uint8_t, std::uint16_t, bool)
+    void cpu::SET(mmu &mmu, std::uint8_t bit, std::uint16_t address, bool)
     {
+        auto n = mmu.read(address);
+
+        this->SET(mmu, bit, n);
+
+        mmu.write(address, n);
     }
 }
