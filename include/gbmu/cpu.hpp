@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/07 11:22:32 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/13 18:40:50 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/15 17:43:26 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,6 +79,8 @@ namespace gbmu
         ~cpu();
 
     public:
+        void boot(mmu &mmu);
+
         /**
          * Handle highest-priority interrupt if any.
          * Handle instruction otherwise.
