@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/11 14:37:00 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/15 14:49:51 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/15 20:57:17 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -362,6 +362,10 @@ namespace gbmu
         else if (address >= 0x4000 && address <= 0x5FFF)
         {
             this->ram_bank = value;
+        }
+        else if (address >= 0xA000 && address <= 0xBFFF)
+        {
+            this->ram[address - 0xA000] = value;
         }
         else
         {

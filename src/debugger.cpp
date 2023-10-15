@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/08 10:52:48 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/13 23:05:19 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/15 23:58:44 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,10 +29,27 @@ namespace gbmu
         _pause(false),
         _step(false)
     {
-        // this->_breakpoints[0x30A3] = 1;
+        // this->_breakpoints[0x0042] = 1;
     }
 
     debugger::~debugger() = default;
+
+    void debugger::boot(cpu &cpu, mmu &mmu)
+    {
+#ifdef GBMU_DISABLE_BOOT_ROM
+        mmu.write(0xFF50, 0x01);
+
+        cpu.pc = 0x0100;
+        cpu.sp = 0xFFFE;
+#else
+        mmu.write(0xFF50, 0x00);
+
+        while (cpu.pc < 0x0100)
+        {
+            this->step(cpu, mmu);
+        }
+#endif
+    }
 
     void debugger::step(cpu &cpu, mmu &mmu)
     {
@@ -64,6 +81,7 @@ namespace gbmu
         try
         {
             cpu.step(mmu);
+            // this->_cmd_print(cpu, mmu, std::deque<std::string>());
         }
         catch (gbmu::illegal_instruction_exception const &e)
         {

@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/07 11:44:58 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/15 18:32:49 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/16 00:20:29 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,26 +23,29 @@ namespace gbmu
     mmu::mmu(cartridge &cart) :
         cart(cart),
         io_regs(),
-        booting(true),
+        ppu(),
+        lcd(),
         interrupt_master(false),
         interrupt_mask(0b00011111),
         interrupt_flag(0b00011111),
-        wram(new std::uint8_t[WRAM_SIZE]()),
-        hram(new std::uint8_t[HRAM_SIZE]())
+        // wram(new std::uint8_t[WRAM_SIZE]()),
+        // hram(new std::uint8_t[HRAM_SIZE]())
+        wram(),
+        hram()
     {
     }
 
     mmu::~mmu()
     {
-        delete[] this->wram;
-        delete[] this->hram;
+        // delete[] this->wram;
+        // delete[] this->hram;
     }
 
     std::uint8_t const mmu::BOOT_ROM[0x0100] {
         0x31, 0xFE, 0xFF,       // 0x0000 - LD SP, 0xFFFE
         0xAF,                   // 0x0003 - XOR A, A
         0x21, 0xFF, 0x9F,       // 0x0004 - LD HL, 0x9FFF
-        0x32,                   // 0x0007 - LD [HL+], A
+        0x32,                   // 0x0007 - LD [HL-], A
         0xCB, 0x7C,             // 0x0008 - BIT 7, H
         0x20, 0xFB,             // 0x000A - JR NZ, -5
         0x21, 0x26, 0xFF,       // 0x000C - LD HL, 0xFF26
@@ -140,50 +143,15 @@ namespace gbmu
         0x22,                   // 0x00A5 - LD [HL-], A
         0x23,                   // 0x00A6 - INC HL
         0xC9,                   // 0x00A7 - RET
-        0xCE, 0xED,             // 0x00A8 - ADC A, 0xED
-        0x66,                   // 0x00AA - LD H, [HL]
-        0x66,                   // 0x00AB - LD H, [HL]
-        0xCC, 0x0D, 0x00,       // 0x00AC - CALL Z, 0x0D
-        0x0B,                   // 0x00AF - DEC BC
-        0x03,                   // 0x00B0 - INC BC
-        0x73,                   // 0x00B1 - LD [HL], E
-        0x00,                   // 0x00B2 - NOP
-        0x83,                   // 0x00B3 - ADD A, E
-        0x00,                   // 0x00B4 - NOP
-        0x0C,                   // 0x00B5 - INC C
-        0x00,                   // 0x00B6 - NOP
-        0x0D,                   // 0x00B7 - DEC C
-        0x00,                   // 0x00B8 - NOP
-        0x08, 0x11, 0x1F,       // 0x00B9 - LD [0x1F11], SP
-        0x88,                   // 0x00BC - ADC A, B
-        0x89,                   // 0x00BD - ADC A, C
-        0x00,                   // 0x00BE - NOP
-        0x0E, 0xDC,             // 0x00BF - LD C, 0xDC
-        0xCC, 0x6E, 0xE6,       // 0x00C1 - CALL Z, 0xE66E
-        0xDD,                   // 0x00C4 - ILLEGAL_DD
-        0xDD,                   // 0x00C5 - ILLEGAL_DD
-        0xD9,                   // 0x00C6 - RETI
-        0x99,                   // 0x00C7 - SBC A, C
-        0xBB,                   // 0x00C8 - CP A, E
-        0xBB,                   // 0x00C9 - CP A, E
-        0x67,                   // 0x00CA - LD H, A
-        0x63,                   // 0x00CB - LD H, E
-        0x6E,                   // 0x00CC - LD L, [HL]
-        0x0E, 0xEC,             // 0x00CD - LD C, 0xEC
-        0xCC, 0xDD, 0xDC,       // 0x00CF - CALL Z, 0xDCDD
-        0x99,                   // 0x00D2 - SBC A, C
-        0x9F,                   // 0x00D3 - SBC A, A
-        0xBB,                   // 0x00D4 - CP A, E
-        0xB9,                   // 0x00D5 - CP A, C
-        0x33,                   // 0x00D6 - INC SP
-        0x3E, 0x3C,             // 0x00D7 - LD A, 0x3C
-        0x42,                   // 0x00D9 - LD B, D
-        0xB9,                   // 0x00DA - CP A, C
-        0xA5,                   // 0x00DB - AND A, L
-        0xB9,                   // 0x00DC - CP A, C
-        0xA5,                   // 0x00DD - AND A, L
-        0x42,                   // 0x00DE - LD B, D
-        0x3C,                   // 0x00DF - INC A
+
+        // Nintendo Logo
+        0xCE, 0xED, 0x66, 0x66, 0xCC, 0x0D, 0x00, 0x0B, 0x03, 0x73, 0x00, 0x83, 0x00, 0x0C, 0x00, 0x0D,
+        0x00, 0x08, 0x11, 0x1F, 0x88, 0x89, 0x00, 0x0E, 0xDC, 0xCC, 0x6E, 0xE6, 0xDD, 0xDD, 0xD9, 0x99,
+        0xBB, 0xBB, 0x67, 0x63, 0x6E, 0x0E, 0xEC, 0xCC, 0xDD, 0xDC, 0x99, 0x9F, 0xBB, 0xB9, 0x33, 0x3E,
+
+        // Logo copyright sign
+        0x3C, 0x42, 0xB9, 0xA5, 0xB9, 0xA5, 0x42, 0x3C,
+
         0x21, 0x04, 0x01,       // 0x00E0 - LD HL, 0x104
         0x11, 0xA8, 0x00,       // 0x00E3 - LD DE, 0xA8
         0x1A,                   // 0x00E6 - LD A, [DE]
@@ -208,7 +176,7 @@ namespace gbmu
 
     std::uint8_t mmu::_read_impl(std::uint16_t address) const
     {
-        if (this->booting && address < sizeof(mmu::BOOT_ROM))
+        if (address < sizeof(mmu::BOOT_ROM) && this->read(0xFF50) == 0)
         {
             return mmu::BOOT_ROM[address];
         }
@@ -227,10 +195,38 @@ namespace gbmu
         {
             return this->wram[address - 0xC000];
         }
+        /* E000-FDFF - Echo RAM */
+        else if (address >= 0xE000 && address <= 0xFDFF)
+        {
+            TODO("read: Echo RAM");
+        }
+        /* FE00-FE9F - OAM */
+        else if (address >= 0xFE00 && address <= 0xFE9F)
+        {
+            TODO("read: Object Attribute Memory");
+        }
+        /* FEA0-FEFF - Unused */
+        else if (address >= 0xFEA0 && address <= 0xFEFF)
+        {
+            throw_located(memory_read_exception(address));
+        }
         /* FF00-FF7F - I/O registers */
         else if (address >= 0xFF00 && address <= 0xFF7F)
         {
-            return this->io_regs.read(address);
+            switch (address)
+            {
+            case 0xFF40:
+            case 0xFF41:
+            case 0xFF42:
+            case 0xFF43:
+            case 0xFF44:
+            case 0xFF45:
+            case 0xFF4A:
+            case 0xFF4B:
+                return this->lcd.read(address);
+            default:
+                return this->io_regs[address];
+            }
         }
         /* FF80-FFFE - High RAM */
         else if (address >= 0xFF80 && address <= 0xFFFE)
@@ -257,14 +253,10 @@ namespace gbmu
             this->cart.write(address, value);
         }
         /* 8000-97FF - Tile RAM */
-        else if (address >= 0x8000 && address <= 0x97FF)
-        {
-            TODO("write: Tile RAM");
-        }
         /* 9800-9FFF - Background map */
-        else if (address >= 0x9800 && address <= 0x9FFF)
+        else if (address >= 0x8000 && address <= 0x9FFF)
         {
-            TODO("write: Background Map");
+            this->ppu.write(address, value);
         }
         /* A000-BFFF - Cartridge RAM */
         else if (address >= 0xA000 && address <= 0xBFFF)
@@ -289,12 +281,25 @@ namespace gbmu
         /* FEA0-FEFF - Unused */
         else if (address >= 0xFEA0 && address <= 0xFEFF)
         {
-            TODO("write: Unused");
+            throw_located(memory_write_exception(address, value));
         }
         /* FF00-FF7F - I/O registers */
         else if (address >= 0xFF00 && address <= 0xFF7F)
         {
-            this->io_regs.write(address, value);
+            switch (address)
+            {
+            case 0xFF40:
+            case 0xFF41:
+            case 0xFF42:
+            case 0xFF43:
+            case 0xFF44:
+            case 0xFF45:
+            case 0xFF4A:
+            case 0xFF4B:
+                this->lcd.write(address, value);
+            default:
+                this->io_regs[address] = value;
+            }
         }
         /* FF80-FFFE - High RAM */
         else if (address >= 0xFF80 && address <= 0xFFFE)

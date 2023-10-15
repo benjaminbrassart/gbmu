@@ -6,11 +6,13 @@
 #    By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/10/07 11:07:29 by bbrassar          #+#    #+#              #
-#    Updated: 2023/10/15 14:52:12 by bbrassar         ###   ########.fr        #
+#    Updated: 2023/10/16 00:21:18 by bbrassar         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 CURRENT_MAKEFILE := $(lastword $(MAKEFILE_LIST))
+
+# FEATURES := DISABLE_BOOT_ROM
 
 NAME := gbmu
 
@@ -21,6 +23,7 @@ CXXFLAGS += -g3
 CXXFLAGS += -MMD -MP
 CXXFLAGS += -Iinclude
 CXXFLAGS += -std=c++20
+CXXFLAGS += $(FEATURES:%=-DGBMU_%=1)
 
 LDLIBS :=
 LDFLAGS :=
@@ -33,6 +36,8 @@ DIR_OBJ := obj
 
 SRC := main.cpp
 SRC += mmu.cpp
+SRC += ppu.cpp
+SRC += lcd.cpp
 SRC += format.cpp
 SRC += exception.cpp
 SRC += cpu.cpp
