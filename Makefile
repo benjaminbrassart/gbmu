@@ -6,9 +6,11 @@
 #    By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/10/07 11:07:29 by bbrassar          #+#    #+#              #
-#    Updated: 2023/10/13 19:44:26 by bbrassar         ###   ########.fr        #
+#    Updated: 2023/10/15 14:46:10 by bbrassar         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
+
+CURRENT_MAKEFILE := $(lastword $(MAKEFILE_LIST))
 
 NAME := gbmu
 
@@ -50,7 +52,6 @@ $(OBJ): $(DIR_OBJ)/%.cpp.o: $(DIR_SRC)/%.cpp
 -include $(DEP)
 
 .PHONY: all clean fclean re
-.NOTPARALLEL: re
 
 all: $(NAME)
 
@@ -60,4 +61,6 @@ clean:
 fclean: clean
 	@$(RM) $(NAME)
 
-re: fclean all
+re:
+	$(MAKE) -f $(CURRENT_MAKEFILE) fclean
+	$(MAKE) -f $(CURRENT_MAKEFILE) all
