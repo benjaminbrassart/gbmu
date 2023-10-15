@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/08 10:47:30 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/13 18:47:49 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/15 19:46:27 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,7 @@ namespace gbmu
         ~debugger();
 
     public:
+        void boot(cpu &cpu, mmu &mmu);
         void step(cpu &cpu, mmu &mmu);
 
     private:

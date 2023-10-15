@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/07 11:22:32 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/15 17:43:26 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/15 23:51:14 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,40 +33,40 @@ namespace gbmu
             /** AF register pair */
             std::uint16_t af;
             struct {
-                /** AF high byte */
-                std::uint8_t a;
                 /** AF low byte */
                 std::uint8_t f;
+                /** AF high byte */
+                std::uint8_t a;
             };
         };
         union {
             /** BC register pair */
             std::uint16_t bc;
             struct {
-                /** BC high byte */
-                std::uint8_t b;
                 /** BC low byte */
                 std::uint8_t c;
+                /** BC high byte */
+                std::uint8_t b;
             };
         };
         union {
             /** DE register pair */
             std::uint16_t de;
             struct {
-                /** DE high byte */
-                std::uint8_t d;
                 /** DE low byte */
                 std::uint8_t e;
+                /** DE high byte */
+                std::uint8_t d;
             };
         };
         union {
             /** HL register pair */
             std::uint16_t hl;
             struct {
-                /** HL high byte */
-                std::uint8_t h;
                 /** HL low byte */
                 std::uint8_t l;
+                /** HL high byte */
+                std::uint8_t h;
             };
         };
         /** Program counter */
@@ -133,7 +133,7 @@ namespace gbmu
         /**
          * Increment program counter by an offset
          */
-        void _jump_relative(std::uint8_t offset);
+        void _jump_relative(std::int8_t offset);
 
         /**
          * Push program counter to the stack, then jump
@@ -185,7 +185,7 @@ namespace gbmu
         void ADC(mmu &mmu, std::uint8_t& reg_out, std::uint8_t reg_in);
         void SBC(mmu &mmu, std::uint8_t& reg_out, std::uint8_t reg_in);
         void XOR(mmu &mmu, std::uint8_t& reg_out, std::uint8_t reg_in);
-        void CP(mmu &mmu, std::uint8_t& reg_out, std::uint8_t reg_in);
+        void CP(mmu &mmu, std::uint8_t const& reg_out, std::uint8_t reg_in);
         void RET(mmu &mmu, bool condition);
         void POP(mmu &mmu, std::uint16_t& reg_out);
         void JP(mmu &mmu, bool condition);
