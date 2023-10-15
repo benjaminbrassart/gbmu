@@ -50,8 +50,9 @@ while len(buffer := f.read(1)) == 1:
 
     op = insset.get(f"0x{code:02X}", None)
 
-    comment = [f"{op['mnemonic']}"]
+    comment = [op["mnemonic"]]
     argc = (op["bytes"] - argc_offset)
+
     args.append(f"0x{code:02X}")
 
     if argc != 0 and len(buffer := f.read(argc)) == argc:
@@ -63,7 +64,12 @@ while len(buffer := f.read(1)) == 1:
         op_name = operand["name"]
 
         if (op_size := operand.get("bytes", None)) is None:
-            comment.append(op_name)
+            if operand.get("increment", False):
+                op_name = f"{op_name}-"
+            elif operand.get("decrement", False):
+                op_name = f"{op_name}+"
+
+            op_value = op_name
         else:
             op_data = buffer[:op_size]
             buffer = buffer[op_size:]
@@ -74,7 +80,10 @@ while len(buffer := f.read(1)) == 1:
                 v = int.from_bytes(op_data, "little", signed = False)
                 op_value = f"0x{v:02X}"
 
-            comment.append(op_value)
+        if not operand["immediate"]:
+            op_value = f"[{op_value}]"
+
+        comment.append(op_value)
 
     args_str = ", ".join(args) + ","
     comment_str = " ".join(comment)
