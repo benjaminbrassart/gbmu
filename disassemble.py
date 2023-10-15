@@ -14,7 +14,8 @@ def file_size(f: io.BufferedReader) -> int:
 
     return size
 
-if len(sys.argv) == 1:
+
+if len(sys.argv) == 1 or sys.argv[1] == "-":
     f = sys.stdin.buffer
 elif len(sys.argv) == 2:
     f = open(sys.argv[1], "rb")
@@ -42,13 +43,15 @@ while len(buffer := f.read(1)) == 1:
 
         code = buffer[0]
         insset = cbprefixed
+        argc_offset = 2
     else:
         insset = unprefixed
+        argc_offset = 1
 
     op = insset.get(f"0x{code:02X}", None)
 
     comment = [f"{op['mnemonic']}"]
-    argc = (op["bytes"] - 1)
+    argc = (op["bytes"] - argc_offset)
     args.append(f"0x{code:02X}")
 
     if argc != 0 and len(buffer := f.read(argc)) == argc:
