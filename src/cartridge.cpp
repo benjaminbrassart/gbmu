@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/11 14:37:00 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/13 23:04:47 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/15 12:52:34 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -143,13 +143,12 @@ namespace gbmu
 
         if (cart != nullptr)
         {
-            f.seekg(std::istream::beg);
-            f.read(reinterpret_cast<char*>(rom), rom_size);
+            std::copy(std::begin(raw_header), std::end(raw_header), rom);
 
-            // for (auto i = 0; i < 336; i += 1)
-            // {
-            //     std::cout << i << ": " << hex(rom[i]) << " (" << hex(cart->rom[i]) << ")" << std::endl;
-            // }
+            std::size_t rom_body_size = (rom_size - sizeof(raw_header));
+            auto rom_body = reinterpret_cast<char*>(&rom[sizeof(raw_header)]);
+
+            f.read(rom_body, rom_body_size);
 
             if (!f.fail())
             {
