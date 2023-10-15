@@ -75,9 +75,9 @@ while len(buffer := f.read(1)) == 1:
             buffer = buffer[op_size:]
 
             if op_name == "e8":
-                op_value = str(int.from_bytes(op_data, "little", signed = True))
+                op_value = str(int.from_bytes(op_data, "little", signed=True))
             else:
-                v = int.from_bytes(op_data, "little", signed = False)
+                v = int.from_bytes(op_data, "little", signed=False)
                 op_value = f"0x{v:02X}"
 
         if not operand["immediate"]:
@@ -86,6 +86,10 @@ while len(buffer := f.read(1)) == 1:
         comment.append(op_value)
 
     args_str = ", ".join(args) + ","
-    comment_str = " ".join(comment)
-    print(f"{args_str:<20}// {comment_str}")
+    comment_str = comment.pop(0)
+
+    if len(comment) > 0:
+        comment_str += " " + ", ".join(comment)
+
+    print(f"{args_str:<24}// {comment_str}")
 f.close()
