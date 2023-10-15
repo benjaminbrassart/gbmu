@@ -29,12 +29,17 @@ opcodes: dict = requests.get(OPCODES_URL).json()
 cbprefixed: dict = opcodes["cbprefixed"]
 unprefixed: dict = opcodes["unprefixed"]
 
-while len(buffer := f.read(1)) == 1:
-    code = buffer[0]
+address = 0x0000
 
+while len(buffer := f.read(1)) == 1:
+    address_offset = 1
+
+    code = buffer[0]
     args = []
 
     if code == 0xCB:
+        address_offset += 1
+
         args.append("0xCB")
 
         if len(buffer := f.read(1)) == 0:
@@ -52,6 +57,7 @@ while len(buffer := f.read(1)) == 1:
 
     comment = [op["mnemonic"]]
     argc = (op["bytes"] - argc_offset)
+    address_offset += argc
 
     args.append(f"0x{code:02X}")
 
@@ -91,5 +97,7 @@ while len(buffer := f.read(1)) == 1:
     if len(comment) > 0:
         comment_str += " " + ", ".join(comment)
 
-    print(f"{args_str:<24}// {comment_str}")
+    print(f"{args_str:<24}// 0x{address:04X} - {comment_str}")
+
+    address += address_offset
 f.close()
