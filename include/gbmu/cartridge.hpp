@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/07 19:27:46 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/13 11:40:54 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/15 14:49:52 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,7 @@ namespace gbmu
         std::uint8_t cgb_flag;
         std::uint16_t new_licensee_code;
         std::uint8_t sgb_flag;
-        cartridge_type cartridge_type;
+        cartridge_type type;
         std::uint8_t rom_size;
         std::uint8_t ram_size;
         std::uint8_t destination_code;

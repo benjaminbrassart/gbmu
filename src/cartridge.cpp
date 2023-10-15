@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/11 14:37:00 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/15 12:52:34 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/15 14:49:51 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,7 +99,7 @@ namespace gbmu
 
         cartridge *cart;
 
-        switch (header->cartridge_type)
+        switch (header->type)
         {
             case cartridge_type::ROM_ONLY:
             case cartridge_type::ROM_RAM:
