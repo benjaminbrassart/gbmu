@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/16 00:20:41 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/16 00:39:00 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/16 11:36:53 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,14 +38,14 @@ namespace gbmu
 
         switch (address)
         {
-            case 0xFF40: output = &lcdc;
-            case 0xFF41: output = &stat;
-            case 0xFF42: output = &scy;
-            case 0xFF43: output = &scx;
-            case 0xFF44: output = &ly;
-            case 0xFF45: output = &lyc;
-            case 0xFF4A: output = &wy;
-            case 0xFF4B: output = &wx;
+            case 0xFF40: output = &lcdc; break;
+            case 0xFF41: output = &stat; break;
+            case 0xFF42: output = &scy; break;
+            case 0xFF43: output = &scx; break;
+            case 0xFF44: output = &ly; break;
+            case 0xFF45: output = &lyc; break;
+            case 0xFF4A: output = &wy; break;
+            case 0xFF4B: output = &wx; break;
             default:
                 throw_located(memory_index_exception(address));
         }
