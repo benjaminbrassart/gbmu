@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/07 11:14:40 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/15 19:48:08 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/16 13:22:03 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include "gbmu/debugger.hpp"
 #include "gbmu/exception.hpp"
 #include "gbmu/mmu.hpp"
+#include "gbmu/renderer.hpp"
 
 #include <fstream>
 #include <iostream>
@@ -55,6 +56,7 @@ int main(int argc, char const *argv[])
     gbmu::debugger debugger;
     gbmu::cpu cpu;
     gbmu::mmu mmu(*cartridge);
+    gbmu::renderer renderer;
 
     debugger.boot(cpu, mmu);
 
@@ -62,7 +64,9 @@ int main(int argc, char const *argv[])
     {
         try
         {
+            renderer.poll_events(mmu);
             debugger.step(cpu, mmu);
+            renderer.render(mmu);
         }
         catch (std::exception const &e)
         {
