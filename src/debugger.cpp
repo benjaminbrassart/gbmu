@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/08 10:52:48 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/16 11:47:31 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/16 16:47:57 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include "gbmu/cpu.hpp"
 #include "gbmu/exception.hpp"
 #include "gbmu/mmu.hpp"
+#include "gbmu/renderer.hpp"
 
 #include "format.hpp"
 
@@ -27,7 +28,7 @@ namespace gbmu
 {
     debugger::debugger() :
         _breakpoints(),
-        _pause(true),
+        _pause(false),
         _step(false)
     {
         // this->_breakpoints[0x0042] = 1;
@@ -35,7 +36,7 @@ namespace gbmu
 
     debugger::~debugger() = default;
 
-    void debugger::boot(cpu &cpu, mmu &mmu)
+    void debugger::boot(renderer &renderer, cpu &cpu, mmu &mmu)
     {
 #ifdef GBMU_DISABLE_BOOT_ROM
         mmu.write(0xFF50, 0x01);
@@ -47,7 +48,9 @@ namespace gbmu
 
         while (cpu.pc < 0x0100)
         {
+            renderer.poll_events(mmu);
             this->step(cpu, mmu);
+            renderer.render(mmu);
         }
 #endif
     }

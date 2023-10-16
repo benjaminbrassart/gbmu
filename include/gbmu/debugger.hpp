@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/08 10:47:30 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/16 11:32:26 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/16 16:49:02 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@ namespace gbmu
     class cpu;
     class mmu;
     class debugger;
+    class renderer;
 
     typedef void (*command_handler)(debugger &, cpu &, mmu &, std::deque<std::string> const &);
 
@@ -48,7 +49,7 @@ namespace gbmu
         ~debugger();
 
     public:
-        void boot(cpu &cpu, mmu &mmu);
+        void boot(renderer &renderer, cpu &cpu, mmu &mmu);
         void step(cpu &cpu, mmu &mmu);
 
     private:

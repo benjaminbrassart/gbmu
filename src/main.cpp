@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/07 11:14:40 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/16 13:22:03 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/16 16:49:14 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,7 @@ int main(int argc, char const *argv[])
     gbmu::mmu mmu(*cartridge);
     gbmu::renderer renderer;
 
-    debugger.boot(cpu, mmu);
+    debugger.boot(renderer, cpu, mmu);
 
     while (true)
     {
