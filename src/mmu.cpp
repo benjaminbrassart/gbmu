@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/07 11:44:58 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/16 00:20:29 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/16 11:34:56 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -225,7 +225,7 @@ namespace gbmu
             case 0xFF4B:
                 return this->lcd.read(address);
             default:
-                return this->io_regs[address];
+                return this->io_regs[address - 0xFF00];
             }
         }
         /* FF80-FFFE - High RAM */
@@ -298,7 +298,7 @@ namespace gbmu
             case 0xFF4B:
                 this->lcd.write(address, value);
             default:
-                this->io_regs[address] = value;
+                this->io_regs[address - 0xFF00] = value;
             }
         }
         /* FF80-FFFE - High RAM */
