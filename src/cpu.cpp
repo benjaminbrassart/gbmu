@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/07 11:27:35 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/15 23:51:01 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/16 11:51:07 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,11 +60,9 @@ namespace gbmu
     void cpu::step(mmu &mmu)
     {
         // handle interrupts
-        constexpr static std::uint8_t const IF_MASK = 0x1F;
-
         if (mmu.interrupt_master)
         {
-            int interrupts = IF_MASK & mmu.read(0xFF0F) & mmu.read(0xFFFF);
+            int interrupts = cpu::IF_MASK & mmu.read(0xFF0F) & mmu.read(0xFFFF);
 
             for (int i = 0; i < 5; i += 1)
             {
@@ -79,6 +77,22 @@ namespace gbmu
         std::uint8_t code = this->_read_byte(mmu);
 
         this->_handle_instruction(mmu, code);
+    }
+
+    void cpu::dump_stack()
+    {
+        auto stack_copy = this->stack;
+        int index = 0;
+
+        while (!stack_copy.empty())
+        {
+            auto &elem = stack_copy.top();
+
+            std::cout << index << ": " << elem << std::endl;
+
+            index += 1;
+            stack_copy.pop();
+        }
     }
 
     std::uint8_t cpu::_read_byte(mmu &mmu)
@@ -99,7 +113,15 @@ namespace gbmu
 
     void cpu::_handle_interrupt(mmu &mmu, int interrupt)
     {
-        this->_call(mmu, 0x40 + (interrupt * 8));
+
+        this->_call(mmu, 0x40 + ((interrupt << 5) * 8));
+
+        std::uint8_t orig = mmu.read(0xFF0F);
+
+        // disable interrupts
+        mmu.interrupt_master = false;
+        // reset current interrupt
+        mmu.write(0xFF0F, orig & cpu::IF_MASK & ~interrupt);
     }
 
     void cpu::_handle_instruction(mmu &mmu, std::uint8_t code)
@@ -2486,12 +2508,34 @@ namespace gbmu
         if (condition)
         {
             this->_ret(mmu);
+
+            if (this->stack.empty())
+            {
+                std::cerr << "Erroneous RET instruction: empty stack" << std::endl;
+            }
+            else if (this->stack.top().type != element_type::Call)
+            {
+                std::cerr << "Erroneous RET instruction: not a CALL" << std::endl;
+            }
+
+            this->stack.pop();
         }
     }
 
     void cpu::POP(mmu &mmu, std::uint16_t& reg_out)
     {
         reg_out = this->_pop(mmu);
+
+        if (this->stack.empty())
+        {
+            std::cerr << "Erroneous POP instruction: empty stack" << std::endl;
+        }
+        else if (this->stack.top().type != element_type::Push)
+        {
+            std::cerr << "Erroneous POP instruction: not a PUSH" << std::endl;
+        }
+
+        this->stack.pop();
     }
 
     void cpu::JP(mmu &mmu, bool condition)
@@ -2522,12 +2566,14 @@ namespace gbmu
         if (condition)
         {
             this->_call(mmu, a16);
+            this->stack.push({a16, element_type::Call});
         }
     }
 
     void cpu::PUSH(mmu &mmu, std::uint16_t reg)
     {
         this->_push(mmu, reg);
+        this->stack.push({reg, element_type::Push});
     }
 
     void cpu::ADD(mmu &mmu, std::uint8_t& reg_out)

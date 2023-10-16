@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/08 10:47:30 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/15 19:46:27 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/16 11:32:26 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,5 +62,6 @@ namespace gbmu
         void _cmd_continue(cpu &cpu, mmu &mmu, std::deque<std::string> const &args);
         void _cmd_next(cpu &cpu, mmu &mmu, std::deque<std::string> const &args);
         void _cmd_break(cpu &cpu, mmu &mmu, std::deque<std::string> const &args);
+        void _cmd_stack(cpu &cpu, mmu &mmu, std::deque<std::string> const &args);
     };
 }

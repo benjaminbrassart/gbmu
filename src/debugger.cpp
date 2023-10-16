@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/08 10:52:48 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/15 23:58:44 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/16 11:47:31 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,16 +17,17 @@
 
 #include "format.hpp"
 
+#include <deque>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
-#include <deque>
+#include <stdexcept>
 
 namespace gbmu
 {
     debugger::debugger() :
         _breakpoints(),
-        _pause(false),
+        _pause(true),
         _step(false)
     {
         // this->_breakpoints[0x0042] = 1;
@@ -219,6 +220,51 @@ namespace gbmu
                 }
             }
         }
+        else
+        {
+            for (auto &arg : args)
+            {
+                try
+                {
+                    int base;
+
+                    if (arg.starts_with("0x") || arg.starts_with("0X"))
+                    {
+                        base = 16;
+                    }
+                    else
+                    {
+                        base = 10;
+                    }
+
+                    auto iaddr = std::stoi(arg, nullptr, base);
+
+                    if (iaddr < 0 || iaddr > 0xFFFF)
+                    {
+                        throw std::out_of_range(arg);
+                    }
+
+                    auto addr = static_cast<std::uint16_t>(iaddr);
+
+                    this->_breakpoints[addr] = true;
+
+                    std::cout << "Add breakpoint at address " << hex(addr) << std::endl;
+                }
+                catch (std::invalid_argument const &)
+                {
+                    std::cout << "Error: unable to parse address: " << arg << std::endl;
+                }
+                catch (std::out_of_range const &)
+                {
+                    std::cout << "Error: address out of range " << arg << std::endl;
+                }
+            }
+        }
+    }
+
+    void debugger::_cmd_stack(cpu &cpu, mmu &, std::deque<std::string> const &)
+    {
+        cpu.dump_stack();
     }
 
     std::unordered_map<std::string, command> const debugger::commands {
@@ -241,6 +287,10 @@ namespace gbmu
         {"break", {
             [](auto &d, auto& cpu, auto &mmu, auto &args) { d._cmd_break(cpu, mmu, args); },
             "break [<address>]",
+        }},
+        {"stack", {
+            [](auto &d, auto& cpu, auto &mmu, auto &args) { d._cmd_stack(cpu, mmu, args); },
+            "stack",
         }},
     };
 
