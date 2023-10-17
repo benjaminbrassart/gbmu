@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/08 10:47:30 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/17 12:01:31 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/17 19:26:00 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,10 @@ namespace gbmu
         void boot(cpu &cpu, mmu &mmu, renderer &renderer);
         void step(cpu &cpu, mmu &mmu, renderer &renderer);
 
+        void handle_signal(int sig);
+
     private:
+        void _prompt() const;
         void _process_stdin(cpu &cpu, mmu &mmu);
 
         static decltype(debugger::commands)::const_iterator get_command(std::string const &name);
@@ -64,5 +67,9 @@ namespace gbmu
         void _cmd_next(cpu &cpu, mmu &mmu, std::deque<std::string> const &args);
         void _cmd_break(cpu &cpu, mmu &mmu, std::deque<std::string> const &args);
         void _cmd_stack(cpu &cpu, mmu &mmu, std::deque<std::string> const &args);
+        void _cmd_read(cpu &cpu, mmu &mmu, std::deque<std::string> const &args);
+        void _cmd_write(cpu &cpu, mmu &mmu, std::deque<std::string> const &args);
+        void _cmd_clear(cpu &cpu, mmu &mmu, std::deque<std::string> const &args);
+        void _cmd_exit(cpu &cpu, mmu &mmu, std::deque<std::string> const &args);
     };
 }

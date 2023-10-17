@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/07 11:14:40 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/17 13:00:05 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/17 19:20:27 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,8 +22,16 @@
 #include <iostream>
 
 #include <cerrno>
+#include <csignal>
 #include <cstdlib>
 #include <cstring>
+
+static gbmu::debugger *DEBUGGER;
+
+static void _handle_sig(int sig)
+{
+    DEBUGGER->handle_signal(sig);
+}
 
 int main(int argc, char const *argv[])
 {
@@ -54,6 +62,19 @@ int main(int argc, char const *argv[])
     }
 
     gbmu::debugger debugger;
+
+    DEBUGGER = &debugger;
+
+    constexpr static int const SIGNALS[] {
+        SIGINT,
+        SIGQUIT,
+    };
+
+    for (auto sig : SIGNALS)
+    {
+        std::signal(sig, &_handle_sig);
+    }
+
     gbmu::cpu cpu;
     gbmu::mmu mmu(*cartridge);
     gbmu::renderer renderer;
