@@ -6,13 +6,14 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/07 11:27:35 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/16 11:51:07 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/17 13:00:46 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "gbmu/cpu.hpp"
 #include "gbmu/mmu.hpp"
 #include "gbmu/exception.hpp"
+#include "gbmu/renderer.hpp"
 
 #include <iomanip>
 #include <iostream>
@@ -49,16 +50,18 @@ namespace gbmu
 
     cpu::~cpu() = default;
 
-    void cpu::boot(mmu &mmu)
+    void cpu::boot(mmu &mmu, renderer &renderer)
     {
         while (this->pc < 0x0100)
         {
-            this->step(mmu);
+            this->step(mmu, renderer);
         }
     }
 
-    void cpu::step(mmu &mmu)
+    void cpu::step(mmu &mmu, renderer &renderer)
     {
+        renderer.poll_events(mmu);
+
         // handle interrupts
         if (mmu.interrupt_master)
         {
@@ -77,6 +80,8 @@ namespace gbmu
         std::uint8_t code = this->_read_byte(mmu);
 
         this->_handle_instruction(mmu, code);
+
+        renderer.render(mmu);
     }
 
     void cpu::dump_stack()

@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/08 10:52:48 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/16 16:47:57 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/17 13:04:00 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include "gbmu/exception.hpp"
 #include "gbmu/mmu.hpp"
 #include "gbmu/renderer.hpp"
+#include "gbmu/io_registers.hpp"
 
 #include "format.hpp"
 
@@ -36,26 +37,24 @@ namespace gbmu
 
     debugger::~debugger() = default;
 
-    void debugger::boot(renderer &renderer, cpu &cpu, mmu &mmu)
+    void debugger::boot(cpu &cpu, mmu &mmu, renderer &renderer)
     {
 #ifdef GBMU_DISABLE_BOOT_ROM
-        mmu.write(0xFF50, 0x01);
+        mmu.write(io_registers::REG_BANK, 0x01);
 
         cpu.pc = 0x0100;
         cpu.sp = 0xFFFE;
 #else
-        mmu.write(0xFF50, 0x00);
+        mmu.write(io_registers::REG_BANK, 0x00);
 
         while (cpu.pc < 0x0100)
         {
-            renderer.poll_events(mmu);
-            this->step(cpu, mmu);
-            renderer.render(mmu);
+            this->step(cpu, mmu, renderer);
         }
 #endif
     }
 
-    void debugger::step(cpu &cpu, mmu &mmu)
+    void debugger::step(cpu &cpu, mmu &mmu, renderer &renderer)
     {
         auto pc = cpu.pc;
 
@@ -80,11 +79,11 @@ namespace gbmu
 
         this->_step = false;
 
-        std::cout << "STEP " << hex(pc) << ": " << hex(mmu.read(pc)) << std::endl;
+        // std::cout << "STEP " << hex(pc) << ": " << hex(mmu.read(pc)) << std::endl;
 
         try
         {
-            cpu.step(mmu);
+            cpu.step(mmu, renderer);
             // this->_cmd_print(cpu, mmu, std::deque<std::string>());
         }
         catch (gbmu::illegal_instruction_exception const &e)

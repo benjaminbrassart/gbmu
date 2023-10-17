@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/07 11:14:40 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/16 16:49:14 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/17 13:00:05 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,15 +58,13 @@ int main(int argc, char const *argv[])
     gbmu::mmu mmu(*cartridge);
     gbmu::renderer renderer;
 
-    debugger.boot(renderer, cpu, mmu);
+    debugger.boot(cpu, mmu, renderer);
 
     while (true)
     {
         try
         {
-            renderer.poll_events(mmu);
-            debugger.step(cpu, mmu);
-            renderer.render(mmu);
+            debugger.step(cpu, mmu, renderer);
         }
         catch (std::exception const &e)
         {

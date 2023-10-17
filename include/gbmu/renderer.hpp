@@ -6,13 +6,14 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/16 11:56:45 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/16 13:23:51 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/17 14:03:11 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include <GLFW/glfw3.h>
 #include <GL/gl.h>
@@ -30,6 +31,7 @@ namespace gbmu
 
     private:
         GLFWwindow *window;
+        std::vector<char const *> joypads;
 
     public:
         renderer();
@@ -43,8 +45,9 @@ namespace gbmu
         void set_title(std::string const &title);
 
     private:
-        static GLFWwindow *_create_window();
+        GLFWwindow *_create_window();
 
-        static void key_callback(GLFWwindow *window, int key, int sc, int action, int mods);
+        void key_callback(GLFWwindow *win, int key, int sc, int action, int mods);
+        void drop_callback(GLFWwindow *win, int count, char const **paths);
     };
 }

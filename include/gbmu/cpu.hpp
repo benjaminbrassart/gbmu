@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/07 11:22:32 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/16 11:29:30 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/17 11:59:53 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 namespace gbmu
 {
     class mmu;
+    class renderer;
 
     enum class cpu_flag
     {
@@ -88,13 +89,13 @@ namespace gbmu
         ~cpu();
 
     public:
-        void boot(mmu &mmu);
+        void boot(mmu &mmu, renderer &renderer);
 
         /**
          * Handle highest-priority interrupt if any.
          * Handle instruction otherwise.
          */
-        void step(mmu &mmu);
+        void step(mmu &mmu, renderer &renderer);
 
         void dump_stack();
 

@@ -6,7 +6,7 @@
 /*   By: bbrassar <bbrassar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/16 00:31:52 by bbrassar          #+#    #+#             */
-/*   Updated: 2023/10/16 00:40:17 by bbrassar         ###   ########.fr       */
+/*   Updated: 2023/10/17 12:06:20 by bbrassar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ namespace gbmu
         void trigger(interrupt_flag it);
     };
 
-    template<class T, interrupt_flag Int>
+    template<interrupt_flag Int>
     class interrupt_source
     {
     public:
